@@ -83,8 +83,16 @@ the **email** that feed the system. An **administrator** can create, update, act
 > The whole point of an aggregate boundary is that everything inside is
 > consistent. - Greg Young
 
-One can note this is very similar to the distinction of the operational database and the data warehouse used for reporting.
-This acts exactly the same: one builds query-oriented database to optimize the read.
+One can note this is very similar to the distinction of the operational database and the data warehouse
+used for reporting. This acts exactly the same: one builds query-oriented database to optimize the read.
+
+> This is the sound philosophy of CQRS. Separate the commands from queries.
+> The commands change the state of the system and should be transactional and act on small consistent
+> chuncks (Aggregate Roots in DDD). These chunks can well be stored as Blob in a NoSql database. 
+> When the state as changed, the command publish an event that can be subscribed by the Query/Reporting
+> context. In this context you can denormalize the value in a RDBMS (for lists) or in an OLAP cube 
+> (for stats) to show data to your users. No need to have the same model when changing the system and
+> when querying it, these are different concerns.
 
 
 [wikipedia-datawarehouse]:http://en.wikipedia.org/wiki/Data_warehouse
