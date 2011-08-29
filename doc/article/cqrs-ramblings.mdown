@@ -1,0 +1,50 @@
+# CRQS - DSL part
+
+## Use case
+
+Entities
+
+    User(@Identifier id:UUID, email:String, name:String)
+
+Service
+
+    UserService {
+	    login (user:User)
+	    updateEmail (user:User, newEmail:String)
+	    updateName (user:User, newName:String)
+	}
+
+
+## Stereotypes
+
+    service
+    event
+    command
+    entity
+
+
+    class ChangeCustomerName : Handles<ChangeCustomerNameCommand> {
+        public void Handle(ChangeCustomerNameCommand cmd) {
+            if(somebasic logic) throw new Exception();
+            DomainEvents.Publish(new CustomerNameChangedEvent(cmd.FirstName, cmd,LastName));
+        }
+    }
+
+template:
+
+    class Change«attribute.entity.name»«attribute.name» extends Handle<Change«attribute.entity.name»«attribute.name»Command> {
+    	def handle(command: Change«attribute.entity.name»«attribute.name»Command) {
+    		if(canApply(command)) {
+    			DomainEvents.publish(cmd.toEvent));
+    		}
+    	}
+    	def toEvent(command: Change«attribute.entity.name»«attribute.name»Command):Event = {
+    		/* implement business logic here: by default one allows the command execution */
+	    	command.toEvent
+    	}
+    	def canApply(command: Change«attribute.entity.name»«attribute.name»Command):Boolean {
+	    	/* implement business logic here: by default one allows the command execution */
+	    	true
+	    }
+    }
+  
