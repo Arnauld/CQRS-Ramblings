@@ -134,11 +134,11 @@ used for reporting. This acts exactly the same: one builds query-oriented databa
   1. [Episode 1 - Host Introduction](http://distributedpodcast.com/2010/episode-1-host-introductions)
   2. [Episode 2 - CQRS Building block](http://distributedpodcast.com/2011/episode-2-cqrs-building-block)
   3. [Episode 3 - Messaging](http://distributedpodcast.com/2011/episode-3-messaging)
-    * Poisoned message goes to poisoned queue
-    * Command and Event are both messages. Command is a request to do something, it has not happened
-      yet. Events on the other side are statements of fact: it is something that has happened and cannot
-      be revoked. They both capture intents. Command introduce what is called behavior coupling.
-      The commands goes from the client side to the server side.
+     * Poisoned message goes to poisoned queue
+     * Command and Event are both messages. Command is a request to do something, it has not happened
+       yet. Events on the other side are statements of fact: it is something that has happened and cannot
+       be revoked. They both capture intents. Command introduce what is called behavior coupling.
+       The commands goes from the client side to the server side.
   4. [Episode IV - A New Hope ... and NoSQL](http://distributedpodcast.com/2011/episode-iv-a-new-hope-and-nosql)
   5. [Episode 5 - Event store...](http://distributedpodcast.com/2011/episode-5-cqrs-eventstore-best-frameworklibrary-ever)
   6. [Episode 6 - Interview with Jimmy Bogard](http://distributedpodcast.com/2011/episode-6-interview-with-jimmy-bogard)
