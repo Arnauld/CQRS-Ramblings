@@ -4,7 +4,7 @@ require "rubygems"
 require "redcarpet"
 
 content = File.open(ARGV[0],"r:UTF-8") { |f| f.read }
-markdown = Redcarpet.new(content)
+markdown = Redcarpet.new(content, :fenced_code)
 puts <<-eos
 <html>
 <head>

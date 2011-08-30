@@ -338,5 +338,5 @@ used for reporting. This acts exactly the same: one builds query-oriented databa
 
 ## Not CRQS related but still interesting
 
-* [The Essence of Caching – Ehcache](http://www.java-tv.com/2011/04/05/the-essence-of-caching-ehcache/)
-* [JVM Internals – What Does the JVM Do?](http://www.java-tv.com/2011/08/08/jvm-internals-what-does-the-jvm-do/)
+* [The Essence of Caching - Ehcache](http://www.java-tv.com/2011/04/05/the-essence-of-caching-ehcache/)
+* [JVM Internals - What Does the JVM Do?](http://www.java-tv.com/2011/08/08/jvm-internals-what-does-the-jvm-do/)
