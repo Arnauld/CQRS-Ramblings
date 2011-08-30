@@ -29,7 +29,9 @@ A code oriented explanation:
 
 A command is triggered to change the name of a user. The user is uniquely identified by its `ID`.
 
+```scala
     UserChangeNameCommand(userId:ID, newName:String)
+```
 
 Command call behavior method wich internally publish an event that when applied will eventually and
 **ONLY** update internal states. But applying an event **MUST NOT** call behaviors!
@@ -44,6 +46,7 @@ Command call behavior method wich internally publish an event that when applied 
             OK
         }
     }
+```
 
 ```scala
     class User(id:ID) extends AggregateRoot[Person] {
@@ -70,6 +73,7 @@ Command call behavior method wich internally publish an event that when applied 
               name = e.new_name
         }
     }
+```
 
 The underlying `AggregateRoot` mixin that is responsible for managing the aggregate in a consistent
 manner. It is responsible to tracking changes and applying event to the domain object. Such events
@@ -98,7 +102,7 @@ replay mode.
         }
         
         def eventHandler:PartialFunction[Event,Unit]
-
+        
         private def typeOf[T](implicit m: scala.reflect.Manifest[T]) = m.toString
     }
 
