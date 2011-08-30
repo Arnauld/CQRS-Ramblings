@@ -105,7 +105,7 @@ replay mode.
         
         private def typeOf[T](implicit m: scala.reflect.Manifest[T]) = m.toString
     }
-
+```
 
 **UnitOfWork**
 
