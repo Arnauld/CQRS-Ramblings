@@ -121,6 +121,10 @@ replay mode.
             applyEvent(event, true) 
         }
         private def applyEvent(event:Event, is_new:Boolean) {
+            // a little bit paranoid?
+            if(event.aggregate_id != id)
+              throw IncompatibleEventId(event.aggregate_id, id)
+            
             (eventHandler orElse {
                 throw UnsupportedEventType(typeOf[T],event)
             })(event)
@@ -140,11 +144,13 @@ replay mode.
 The `ChangeSummary` abstraction is there to track change within the aggregate, this allows to plug
 different implementation whereas the simple one simply tracks all change in memory.
 
-**Aside notes**: see the strong analogy with the [SDO](http://www.ibm.com/developerworks/java/library/j-sdo)
+**Aside notes**: see the strong analogy with the [Service Data Object (SDO)][sdo]
 data programming (back to the 2004!): 
+
 * SDO `data graph` corresponds to the `AggregateRoot`
 * SDO `root object` corresponds to the underlying `domain object`
 * SDO `change summary` corresponds to the events tracking and event store gateway
+
 
 Ok well, at this point one has almost all the `command` part of the schema. Let's see how events get
 published in order to update the `query` part.
@@ -158,8 +164,7 @@ is saved or the unit of work gets commited.
     trait Service[T < AggregateRoot[T]] {
       self:RepositoryProvider[T] with EventBusProvider =>
         def save(instance:T) {
-          val events = instance.getChanges
-          getRepository.save(instance)
+          val events = getRepository.save(instance)
 
           // everything saved let's publish them
           val eventBus = getEventBus
@@ -188,11 +193,22 @@ is saved or the unit of work gets commited.
         }
       }
       
-      def save(instance:T) {
-        val events = instance.getChanges
-
+      def save(instance:T):Iterable[Event] {
+        val changes = instance.getChanges
+        
+        // assign events ids based on the aggregate version. History is ever increasing, 
+        // thus the aggregate version can be viewed as the number of event
+        var eventId = instance.version
+        val events = changes.map({
+          eventId = eventId + 1
+          events.withIds(instanceId, eventId) // it is up to the event to return a copy or not
+        })
+        
         // save new events in the store
-        getEventStore.saveEvents(instance.id, events, instance.version)
+        getEventStore.saveEvents(events)
+        
+        // returns the events with their ids
+        events
       }
 ```
 
@@ -201,17 +217,15 @@ is saved or the unit of work gets commited.
       self: =>
 
       @Transactional
-      def saveEvents(aggregateId:ID, aggregateVersion:Int, events:Iterable[Event]) {
-        var eventId = aggregateVersion
+      def saveEvents(events:Iterable[Event]) {
         events.foreach({ e=> 
-          eventId = eventId + 1
-          save(tx, aggregateId, eventId, e)
+          save(e)
         })
       }
 
-      private def save(tx:TX, aggregateId:ID, eventId:Int, event:Event) {
-        // (aggregate_id, event_id) Constraints
-        val res = executeSQL("insert into events (aggregate_id, event_id, event_data) value (?,?,?)")
+      private def save(event:Event) {
+        // (aggregate_id, event_id) unicity constraint is used as optimistic locking guard
+        executeSQL("insert into events (aggregate_id, event_id, event_data) value (?,?,?)")
       }
    }
 
@@ -226,7 +240,7 @@ is saved or the unit of work gets commited.
 [Meyer]:http://www.amazon.com/Object-Oriented-Software-Construction-Book-CD-ROM/dp/0136291554
 [cqrs-overview]:https://lh5.googleusercontent.com/-75O4GDGMdyI/Tlk0Tpmp38I/AAAAAAAADIM/k9Y9aecZs5s/s800/overview.png
 [young-events]:http://www.infoq.com/presentations/Events-Are-Not-Just-for-Notifications
-
+[sdo]:http://www.ibm.com/developerworks/java/library/j-sdo
 
 
 ## Greasy implementation notes
