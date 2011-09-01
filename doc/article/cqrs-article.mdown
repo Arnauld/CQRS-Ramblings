@@ -25,7 +25,7 @@ strongly encouraging this approach, and gives some really cool articles and inte
 
 ![CQRS Overview][cqrs-overview]
 
-A code oriented explanation:
+## A code first think after explanation
 
 A command is triggered to change the name of a user. The user is uniquely identified by its `ID`.
 
@@ -33,20 +33,42 @@ A command is triggered to change the name of a user. The user is uniquely identi
     UserChangeNameCommand(userId:ID, newName:String)
 ```
 
-Command call behavior method wich internally publish an event that when applied will eventually and
-**ONLY** update internal states. But applying an event **MUST NOT** call behaviors!
+The command is dispatched to the corresponding handler: there must be one and only one command handler
+that handle a given command.
 
 ```scala
-    class UserChangeNameCommandHandler extends CommandHandler<UserChangeNameCommand> {
+    trait CommandDispatcher[T <: Command] {
+      def dispatch(command:T) {
+        val handler = lookupHandler(command)
+        handler.getOrElse({ throw MissingCommandHandler(command) }).handle(command)
+      }
+      def lookupHandler(command:T):Option[CommandHandler]
+    }
+```
+
+The handler is responsible for executing the command. Command first retrieve the `aggregate` that will
+define our consistency model, in this case it retrieves the `user` based on its id. Once retreived, 
+it call the behavior method `changeName` on it. If every thing is ok (no exception thrown) the 
+`aggregate` - in this case the `user` - is saved.
+
+
+```scala
+    class UserChangeNameCommandHandler extends CommandHandler[UserChangeNameCommand] {
         def handle(command:PersonChangeNameCommand) = {
             val user = UserRepository.getById(command.userId)
             if(user==null)
               throw UserNotFound()
             user.changeName(newName)
-            OK
+            UserService.save(user)
         }
     }
 ```
+
+
+It is the behavior method that internally publishes (method `applyNewEvent`) an **internal event** 
+that when applied will eventually and **ONLY** update internal states: applying an event **MUST NOT** 
+call behaviors! This is **one of the key part** of the pattern, because 
+**it allows events to replayed in order to rebuild the user from its history**.
 
 ```scala
     class User(id:ID) extends AggregateRoot[Person] {
@@ -75,7 +97,7 @@ Command call behavior method wich internally publish an event that when applied 
     }
 ```
 
-The underlying `AggregateRoot` mixin that is responsible for managing the aggregate in a consistent
+The underlying `AggregateRoot` mixin is responsible for managing the aggregate in a consistent
 manner. It is responsible to tracking changes and applying event to the domain object. Such events
 can be either new events (that needs to be persisted see [Unit of work][fowler-unitofwork]) or 
 existing events when the aggregate is loaded and reconstructed from its history: think of it as a 
@@ -83,10 +105,17 @@ replay mode.
 
 ```scala
     trait AggregateRoot[T] {
+      this:ChangeSummary =>
+
         def id:ID
+        var version:Int = 0
+
         // 
         def loadFromHistory(events:Stream<Event>) {
-            events.foreach { e => applyEvents(e, false) }
+            events.foreach { e => 
+              applyEvent(e, false) 
+              version = e.eventId
+            }
         }
         protected def applyNewEvent(event:Event) {
             applyEvent(event, true) 
@@ -97,8 +126,9 @@ replay mode.
             })(event)
             
             // when loaded from history, the event is not new...
+            // thus one must add it to the changes
             if(is_new)
-                UnitOfWork.getCurrent().registerNew(event)
+                getChanges.registerNew(event)
         }
         
         def eventHandler:PartialFunction[Event,Unit]
@@ -107,7 +137,86 @@ replay mode.
     }
 ```
 
-**UnitOfWork**
+The `ChangeSummary` abstraction is there to track change within the aggregate, this allows to plug
+different implementation whereas the simple one simply tracks all change in memory.
+
+**Aside notes**: see the strong analogy with the [SDO](http://www.ibm.com/developerworks/java/library/j-sdo)
+data programming (back to the 2004!): 
+* SDO `data graph` corresponds to the `AggregateRoot`
+* SDO `root object` corresponds to the underlying `domain object`
+* SDO `change summary` corresponds to the events tracking and event store gateway
+
+Ok well, at this point one has almost all the `command` part of the schema. Let's see how events get
+published in order to update the `query` part.
+Due to consistancy issue, `public` events (as opposed to the `internal` events that gets fired within
+our domain model) should be published when the event store is up to date. That is when the aggregate
+is saved or the unit of work gets commited.
+
+
+
+```scala
+    trait Service[T < AggregateRoot[T]] {
+      self:RepositoryProvider[T] with EventBusProvider =>
+        def save(instance:T) {
+          val events = instance.getChanges
+          getRepository.save(instance)
+
+          // everything saved let's publish them
+          val eventBus = getEventBus
+          events.foreach({e => eventBus.publish(e)})
+        }
+    }
+```
+
+```scala
+    trait Repository[T < AggregateRoot[T]] {
+      self:EventStoreProvider =>
+
+      /**
+       * factory method used when loading aggregate
+       */
+      protected def newInstance(id:ID):T
+      
+      def getById(id:ID):Option[T] = {
+        val events = eventStore.loadEvents(id)
+        if(events.isEmpty)
+          None
+        else {
+          val instance = newInstance(id)
+          instance.loadFromHistory(events)
+          Some(instance)
+        }
+      }
+      
+      def save(instance:T) {
+        val events = instance.getChanges
+
+        // save new events in the store
+        getEventStore.saveEvents(instance.id, events, instance.version)
+      }
+```
+
+```scala
+   trait EventStore {
+      self: =>
+
+      @Transactional
+      def saveEvents(aggregateId:ID, aggregateVersion:Int, events:Iterable[Event]) {
+        var eventId = aggregateVersion
+        events.foreach({ e=> 
+          eventId = eventId + 1
+          save(tx, aggregateId, eventId, e)
+        })
+      }
+
+      private def save(tx:TX, aggregateId:ID, eventId:Int, event:Event) {
+        // (aggregate_id, event_id) Constraints
+        val res = executeSQL("insert into events (aggregate_id, event_id, event_data) value (?,?,?)")
+      }
+   }
+
+
+## [UnitOfWork][fowler-unitofwork]
 
 > Maintains a list of objects affected by a business transaction and coordinates the writing out of 
 > changes and the resolution of concurrency problems.
@@ -117,6 +226,122 @@ replay mode.
 [Meyer]:http://www.amazon.com/Object-Oriented-Software-Construction-Book-CD-ROM/dp/0136291554
 [cqrs-overview]:https://lh5.googleusercontent.com/-75O4GDGMdyI/Tlk0Tpmp38I/AAAAAAAADIM/k9Y9aecZs5s/s800/overview.png
 [young-events]:http://www.infoq.com/presentations/Events-Are-Not-Just-for-Notifications
+
+
+
+## Greasy implementation notes
+
+### Retry and Optimistic locking management
+
+```scala
+    trait CommandHandlerWithRetry[T <: Command] extends CommandHandler[T] {
+      def delegate:CommandHandler[T]
+      
+      def handle(command:T) {
+        var tryContext = new RetryContext(command)
+        do {
+          try{
+            handler.handle(command)
+          }
+          catch{
+            case e:Exception =>
+              retry = tryContext.shouldRetry(e)
+              if(!retry) // no more retry rethrow it!
+              {
+                throw tryContext.composeExceptions
+              }
+                
+          }
+        }
+        while(retry)
+      }
+      
+      class RetryContext(val command:Command) {
+        val exceptionStrategy = exceptionStrategyFor(command)
+        var exceptions:List[Exception] = Nil
+        
+        /**
+         * Last exception that occured
+         */
+        def lastException = exceptions.head
+        
+        /**
+         * Number of times the command has been attempted
+         */
+        def tryCount = exceptions.size
+        
+        /**
+         * Indicates whether or not the command can be retried.
+         */
+        def shouldRetry(e:Exception):Boolean = {
+          exceptions = e::exceptions
+          exceptionStrategy(command, this)
+        }
+        
+        /**
+         * Compose all exceptions that have been catched through retries
+         * into a single one.
+         */
+        def composeExceptions = ExceptionChain(exceptions)
+      
+        /**
+         * Default exception strategy management
+         */
+        def exceptionStrategyFor(command:T) = 
+          (command.getAdapter(CommandStrategy) orElse defaultExceptionStrategy)(command)
+        
+        def defaultExceptionStrategy = (command:Command,context:RetryContext) => {
+          context.last match {
+            case e:OptimisticLockingException =>
+              (command.canRetry && tryCount<3)
+            case _ =>
+              false
+          }
+        }
+      }
+      
+    }
+```
+
+### Unit of work
+
+```scala
+    object UnitOfWork {
+      def within (c: ()=>Any) {
+        val uow = begin()
+        try {
+          c()
+          uow.commit()
+        }
+        catch {
+          case e:Exception =>
+            rollback()
+            // not responsible for exception handling there, simply rethrow
+            throw e
+        }
+        finally {
+          uow.done()
+        }
+      }
+
+      var unitOfWorkFactory:Option[Factory[UnitOfWork]]
+
+      def newUnitOfWork:UnitOfWork = unitOfWorkFactory.getOrElse({throw UnitOfWorkFactoryNotDefined}).create
+
+      // default strategy is based on a thread local
+      implicit var ref:Ref[UnitOfWork] = ThreadLocalUnitOfWork()
+      def get     (implicit ref:Ref[UnitOfWork]) = ref.getOrElse({throw UnitOfWorkNotBound})
+      def begin   (implicit ref:Ref[UnitOfWork]) = ref.setOrElse(newUnitOfWork, {throw UnsupportedNestedUnitOfWork})
+      def commit  (implicit ref:Ref[UnitOfWork]) = get.commit()
+      def rollback(implicit ref:Ref[UnitOfWork]) = get.rollback()
+      def done    (implicit ref:Ref[UnitOfWork]) = ref.clear
+    }
+    trait UnitOfWork {
+      
+    }
+
+
+```
 
 Let's describe how it works on a more concrete case, with some greasy implementation details. But first
 one must describe our domain.
@@ -168,27 +393,27 @@ When an **agent** is logged into the application, the list of open **tickets** -
 him or to the groups he belongs to - is displayed.
 
 
-:define
-
 # CQRS
 
 ## Command
 
-      [UI] ---------[Command]---------> Handler<Command> 
-           <---------Ack/Nak----------'
+A good command is
 
+* Validated on client side
+* Revalidated on server
+* Reply can be asynnchronous
 
-
-
-    [Command]-*--------1-[CommandHandler]
-      [Event]-*--------*-[EventHandler]
 
 
     PersonReadBookCommand(personId:ID, bookId:ID)
     PersonMovedUpCommand(personId:ID, newAddress:Address)
     PersonAddressStree
 
-##
+## Service layer / Domain
+
+* No getter/setter only behavior
+
+## Aggregate
 
 > Aggregate is a term from Domain Driven Design. It represents a consistency boundary around a group 
 > of objects.
@@ -247,9 +472,9 @@ used for reporting. This acts exactly the same: one builds query-oriented databa
 * [Rinat Abdullin - CQRS Starting Page](http://abdullin.com/cqrs/)
   * [Distributed Decide-Act-Report Model](http://abdullin.com/journal/2011/5/12/distributed-decide-act-report-model.html)
   * [Picture: CQRS and Applied Cloud Architecture](http://abdullin.com/journal/2011/4/30/picture-cqrs-and-applied-cloud-architecture.html)
-     I really like the hexagonal representation of the differents parts and their side-by-side
-    interactions.
+     * *I really like the hexagonal representation of the differents parts and their side-by-side interactions.*
   * [CQRS Architecture and Definitions](http://abdullin.com/journal/2010/11/3/cqrs-architecture-and-definitions.html)
+  * [CQRS - Validation and Business Rules](http://abdullin.com/journal/2010/4/14/cqrs-validation-and-business-rules.html)
 * [Martin Fowler](http://martinfowler.com/)
   * [CQRS](http://martinfowler.com/bliki/CQRS.html)
   * [Eager Read Derivation](http://martinfowler.com/bliki/EagerReadDerivation.html)
@@ -259,6 +484,14 @@ used for reporting. This acts exactly the same: one builds query-oriented databa
 * [Pal Fossmo - CQRS figure](http://blog.fossmo.net/post/Update-to-the-CQRS-figure.aspx)
 * [CQRS info - Lot of Links](http://cqrsinfo.com/)
 * [Greg Young - Blogs](http://codebetter.com/gregyoung/)
+  * [Super Simple CQRS Example - github](http://github.com/gregoryyoung/m-r)
+  * [Command Handlers and the Domain Model](http://codebetter.com/gregyoung/2010/07/12/command-handlers-and-the-domain-model/)
+  * [What is a Domain Event?](http://codebetter.com/gregyoung/2010/04/11/what-is-a-domain-event/)
+  * [Why use Event Sourcing?](http://codebetter.com/gregyoung/2010/02/20/why-use-event-sourcing/)
+  * [CQRS and CAP Theorem](http://codebetter.com/gregyoung/2010/02/20/cqrs-and-cap-theorem/)
+  * [CQRS and Event Sourcing](http://codebetter.com/gregyoung/2010/02/13/cqrs-and-event-sourcing/)
+  * [Command Query Separation?](http://codebetter.com/gregyoung/2009/08/13/command-query-separation/)
+    *Separate command messages that change state from query messages that read state.*
 * [Think Before Coding - CQRS](http://thinkbeforecoding.com/tag/CQRS)
 * [Julien's blog - Software crafting and .NET tips, the agile way](http://julienletrouit.com/?tag=cqrs&lang=en)
 * [CQRS sur Windows Azure - in French](http://msdn.microsoft.com/fr-fr/magazine/gg983487.aspx)
@@ -275,6 +508,12 @@ used for reporting. This acts exactly the same: one builds query-oriented databa
   * [CQRS Building an Event Store](http://blog.jonathanoliver.com/2010/07/cqrs-event-store/)
   * [DDDD: Why I Love CQRS](http://blog.jonathanoliver.com/2009/10/dddd-why-i-love-cqrs/)
 * [Strategic Domain Driven Design with Context Mapping](http://www.infoq.com/articles/ddd-contextmapping)
+* [Zilverblog](http://blog.zilverline.com/tag/cqrs/)
+  * [Towards an immutable domain model – introduction (part 1)](http://blog.zilverline.com/2011/02/01/towards-an-immutable-domain-model-introduction-part-1/)
+  * [Towards an immutable domain model – immutable change (part 2)](http://blog.zilverline.com/2011/02/02/towards-an-immutable-domain-model-–-immutable-change-part-2/)
+  * [Towards an immutable domain model – immutability achieved (part 3)](http://blog.zilverline.com/2011/02/05/towards-an-immutable-domain-model-immutability-achieved-part-3/)
+  * [Towards an immutable domain model – believe the type (part 4)](http://blog.zilverline.com/2011/02/07/towards-an-immutable-domain-model-–-believe-the-type-part-4/)
+  * [Towards an immutable domain model – monads (part 5)](http://blog.zilverline.com/2011/02/10/towards-an-immutable-domain-model-monads-part-5/)
 
 ## Podcast
 
