@@ -97,19 +97,32 @@ call behaviors! This is **one of the key part** of the pattern, because
     }
 ```
 
+```scala
+    trait Event[T <: Event] {
+      /**
+       * By default the event type is generated from implementing class.
+       */
+      def eventType:String = getClass.getName
+    }
+```
+
+```scala
+    case class NameChangedEvent(userId:ID, newName:String) extends Event[NameChangedEvent]
+```
+
 The underlying `AggregateRoot` mixin is responsible for managing the aggregate in a consistent
 manner. It is responsible to tracking changes and applying event to the domain object. Such events
-can be either new events (that needs to be persisted see [Unit of work][fowler-unitofwork]) or 
-existing events when the aggregate is loaded and reconstructed from its history: think of it as a 
-replay mode.
+can be either new events  or 
+existing events in case of aggregate gets loaded and reconstructed from its history: think of it as
+a replay mode.
 
 ```scala
     trait AggregateRoot[T] {
       this:ChangeSummary =>
-
+        
         def id:ID
         var version:Int = 0
-
+        
         // 
         def loadFromHistory(events:Stream<Event>) {
             events.foreach { e => 
@@ -137,46 +150,71 @@ replay mode.
         
         def eventHandler:PartialFunction[Event,Unit]
         
-        private def typeOf[T](implicit m: scala.reflect.Manifest[T]) = m.toString
+        /**
+         * By default the aggregate type is generated from implementing class.
+         */
+        def aggregateType:toString = getClass.getName
     }
 ```
 
-The `ChangeSummary` abstraction is there to track change within the aggregate, this allows to plug
-different implementation whereas the simple one simply tracks all change in memory.
+The `ChangeSummary` abstraction is there to track change (an alternative is to used directly the
+aggregate root or to use a `UnitOfWork` indirection see [Unit of work][fowler-unitofwork]) within 
+the aggregate, this allows to plug different implementation whereas the simple one simply tracks all 
+change in memory.
 
-**Aside notes**: see the strong analogy with the [Service Data Object (SDO)][sdo]
-data programming (back to the 2004!): 
+**Aside notes**: see the strong analogy with the [data graph in Service Data Object (SDO)][sdo]
+(back to the 2004!): 
 
 * SDO `data graph` corresponds to the `AggregateRoot`
 * SDO `root object` corresponds to the underlying `domain object`
 * SDO `change summary` corresponds to the events tracking and event store gateway
-
 
 Ok well, at this point one has almost all the `command` part of the schema. Let's see how events get
 published in order to update the `query` part.
 Due to consistancy issue, `public` events (as opposed to the `internal` events that gets fired within
 our domain model) should be published when the event store is up to date. That is when the aggregate
 is saved or the unit of work gets commited.
-
-
+In the [sample CQRS code](https://github.com/gregoryyoung/m-r/blob/master/SimpleCQRS/EventStore.cs)
+events are published one by one once saved within the event store. I personally don't like this
+approach since it may requires that the publish is part of the current transaction, and furthermore
+that the event published is the same as the one saved. By moving the publish in the service layer,
+it allows a more flexible strategy to publish the event, and make decouple the event store implementation
+from the other components.
 
 ```scala
     trait Service[T < AggregateRoot[T]] {
       self:RepositoryProvider[T] with EventBusProvider =>
         def save(instance:T) {
-          val events = getRepository.save(instance)
-
+          val eventSummaries = getRepository.save(instance)
+          
           // everything saved let's publish them
           val eventBus = getEventBus
-          events.foreach({e => eventBus.publish(e)})
+          eventSummaries.foreach({e => eventBus.publish(e)})
         }
+        /**
+         * By default only the id is returned as message
+         */
+        def toMessage(id:EventId):Message = EventMessage(id.aggregateId, id.eventId, eventType)
+
+
     }
 ```
+
+Instead of publishing the initial event (that may hold lot of data) one instead create a small structure
+that hold the event's id and basic informations suchas the kind of event and the kind of aggregate
+involved by this event.
+
+```scala
+    case class EventSummary(aggregateId:Id, aggregateType:String, eventId:Int, eventType:String) extends Message
+```
+
+That said the **write** or **command** part is done. Event gets created and publish, now they must
+be consumed. Let's add some more code for completness before going to the **read** or **query** part.
 
 ```scala
     trait Repository[T < AggregateRoot[T]] {
       self:EventStoreProvider =>
-
+      
       /**
        * factory method used when loading aggregate
        */
@@ -193,22 +231,23 @@ is saved or the unit of work gets commited.
         }
       }
       
-      def save(instance:T):Iterable[Event] {
+      def save(instance:T):Iterable[EventSummary] {
         val changes = instance.getChanges
         
         // assign events ids based on the aggregate version. History is ever increasing, 
         // thus the aggregate version can be viewed as the number of event
         var eventId = instance.version
-        val events = changes.map({
+        val eventWithSummaries = changes.map({ e =>
           eventId = eventId + 1
-          events.withIds(instance.id, eventId) // it is up to the event to return a copy or not
+          val summary = EventSummary(instance.id, instance.aggregateType, eventId, e.eventType)
+          (summary,e)
         })
         
         // save new events in the store
-        getEventStore.saveEvents(events)
+        getEventStore.saveEvents(eventWithSummaries)
         
-        // returns the events with their ids
-        events
+        // returns the summary of the events
+        summaries.map({ _._1})
       }
     }
 ```
@@ -217,18 +256,20 @@ is saved or the unit of work gets commited.
    trait EventStore {
       
       @Transactional
-      def saveEvents(events:Iterable[Event]) {
-        events.foreach({ e=> 
-          save(e)
-        })
-      }
-      
-      private def save(event:Event) {
+      def saveEvents(events:Iterable[(EventSummary,Event)]) {
         // (aggregate_id, event_id) unicity constraint is used as optimistic locking guard
-        executeSQL("insert into events (aggregate_id, event_id, event_data) value (?,?,?)")
+        val stmt = SQL("insert into events (aggregate_id, event_id, event_data) value (?,?,?)")
+        
+        events.foreach({ e => 
+            val (summary,data) = e
+            stmt.addBatch(summary.aggregateId, summary.eventId, data)
+        })
+        stmt.execute
       }
    }
 ```
+
+The read model consumes `events` and produces `DTO`
 
 ## [UnitOfWork][fowler-unitofwork]
 
