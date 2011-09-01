@@ -201,7 +201,7 @@ is saved or the unit of work gets commited.
         var eventId = instance.version
         val events = changes.map({
           eventId = eventId + 1
-          events.withIds(instanceId, eventId) // it is up to the event to return a copy or not
+          events.withIds(instance.id, eventId) // it is up to the event to return a copy or not
         })
         
         // save new events in the store
@@ -210,12 +210,12 @@ is saved or the unit of work gets commited.
         // returns the events with their ids
         events
       }
+    }
 ```
 
 ```scala
    trait EventStore {
-      self: =>
-
+      
       @Transactional
       def saveEvents(events:Iterable[Event]) {
         events.foreach({ e=> 
@@ -312,9 +312,8 @@ is saved or the unit of work gets commited.
               false
           }
         }
-      }
-      
-    }
+      }//RetryContext
+    }//CommandHandlerWithRetry
 ```
 
 ### Unit of work
@@ -337,11 +336,11 @@ is saved or the unit of work gets commited.
           uow.done()
         }
       }
-
+      
       var unitOfWorkFactory:Option[Factory[UnitOfWork]]
-
+      
       def newUnitOfWork:UnitOfWork = unitOfWorkFactory.getOrElse({throw UnitOfWorkFactoryNotDefined}).create
-
+      
       // default strategy is based on a thread local
       implicit var ref:Ref[UnitOfWork] = ThreadLocalUnitOfWork()
       def get     (implicit ref:Ref[UnitOfWork]) = ref.getOrElse({throw UnitOfWorkNotBound})
@@ -351,10 +350,8 @@ is saved or the unit of work gets commited.
       def done    (implicit ref:Ref[UnitOfWork]) = ref.clear
     }
     trait UnitOfWork {
-      
+      ...
     }
-
-
 ```
 
 Let's describe how it works on a more concrete case, with some greasy implementation details. But first
