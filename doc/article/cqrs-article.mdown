@@ -222,13 +222,13 @@ is saved or the unit of work gets commited.
           save(e)
         })
       }
-
+      
       private def save(event:Event) {
         // (aggregate_id, event_id) unicity constraint is used as optimistic locking guard
         executeSQL("insert into events (aggregate_id, event_id, event_data) value (?,?,?)")
       }
    }
-
+```
 
 ## [UnitOfWork][fowler-unitofwork]
 
