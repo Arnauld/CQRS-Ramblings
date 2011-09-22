@@ -23,6 +23,11 @@ embraces Domain Driven Design, CQS and Event Sourcing concepts. One of its evang
 strongly encouraging this approach, and gives some really cool articles and interviews around this 
 (e.g. recently on QCon London 2011: [Events Are Not Just for Notifications][young-events]).
 
+In short:
+
+> **Command** = **Write**
+> **Query** = **Read**
+
 ![CQRS Overview][cqrs-overview]
 
 ## A code first think after explanation
@@ -47,7 +52,7 @@ that handle a given command.
 ```
 
 The handler is responsible for executing the command. Command first retrieve the `aggregate` that will
-define our consistency model, in this case it retrieves the `user` based on its id. Once retreived, 
+define our consistency boundary, in this case it retrieves the `user` based on its id. Once retreived, 
 it call the behavior method `changeName` on it. If every thing is ok (no exception thrown) the 
 `aggregate` - in this case the `user` - is saved.
 
@@ -59,7 +64,7 @@ it call the behavior method `changeName` on it. If every thing is ok (no excepti
             if(user==null)
               throw UserNotFound()
             user.changeName(newName)
-            UserService.save(user)
+            UserRepository.save(user)
         }
     }
 ```
@@ -201,7 +206,7 @@ from the other components.
 ```
 
 Instead of publishing the initial event (that may hold lot of data) one instead create a small structure
-that hold the event's id and basic informations suchas the kind of event and the kind of aggregate
+that hold the event's id and basic informations such as the kind of event and the kind of aggregate
 involved by this event.
 
 ```scala
@@ -236,10 +241,10 @@ be consumed. Let's add some more code for completness before going to the **read
         
         // assign events ids based on the aggregate version. History is ever increasing, 
         // thus the aggregate version can be viewed as the number of event
-        var eventId = instance.version
+        var sequence = instance.version
         val eventWithSummaries = changes.map({ e =>
-          eventId = eventId + 1
-          val summary = EventSummary(instance.id, instance.aggregateType, eventId, e.eventType)
+          sequence = sequence + 1
+          val summary = EventSummary(instance.id, instance.aggregateType, sequence, e.eventType)
           (summary,e)
         })
         
@@ -505,7 +510,6 @@ used for reporting. This acts exactly the same: one builds query-oriented databa
 
 ## Articles
 
-* [Mark Nijhof - Fohjin](https://github.com/MarkNijhof/Fohjin)
 * [Mark Nijhof - Blog](http://cre8ivethought.com/blog)
   * [CQRS A la Greg Young](http://cre8ivethought.com/blog/2009/11/12/cqrs--la-greg-young)
   * [CQRS Domain Events](http://cre8ivethought.com/blog/2009/11/20/cqrs-domain-events)
@@ -521,12 +525,14 @@ used for reporting. This acts exactly the same: one builds query-oriented databa
   * [Race Conditions Don't Exist](http://www.udidahan.com/2010/08/31/race-conditions-dont-exist/)
   * [When to avoid CQRS](http://www.udidahan.com/2011/04/22/when-to-avoid-cqrs/)
   * [Saga Persistence and Event-Driven Architectures](http://www.udidahan.com/2009/04/20/saga-persistence-and-event-driven-architectures/)
+  * [When to avoid CQRS](http://www.udidahan.com/2011/04/22/when-to-avoid-cqrs/)
 * [Rinat Abdullin - CQRS Starting Page](http://abdullin.com/cqrs/)
   * [Distributed Decide-Act-Report Model](http://abdullin.com/journal/2011/5/12/distributed-decide-act-report-model.html)
   * [Picture: CQRS and Applied Cloud Architecture](http://abdullin.com/journal/2011/4/30/picture-cqrs-and-applied-cloud-architecture.html)
      * *I really like the hexagonal representation of the differents parts and their side-by-side interactions.*
   * [CQRS Architecture and Definitions](http://abdullin.com/journal/2010/11/3/cqrs-architecture-and-definitions.html)
   * [CQRS - Validation and Business Rules](http://abdullin.com/journal/2010/4/14/cqrs-validation-and-business-rules.html)
+  * [Theory of CQRS Command Handlers: Sagas, ARs and Event Subscriptions](http://abdullin.com/journal/2010/9/26/theory-of-cqrs-command-handlers-sagas-ars-and-event-subscrip.html)
 * [Martin Fowler](http://martinfowler.com/)
   * [CQRS](http://martinfowler.com/bliki/CQRS.html)
   * [Eager Read Derivation](http://martinfowler.com/bliki/EagerReadDerivation.html)
@@ -544,6 +550,7 @@ used for reporting. This acts exactly the same: one builds query-oriented databa
   * [CQRS and Event Sourcing](http://codebetter.com/gregyoung/2010/02/13/cqrs-and-event-sourcing/)
   * [Command Query Separation?](http://codebetter.com/gregyoung/2009/08/13/command-query-separation/)
     *Separate command messages that change state from query messages that read state.*
+  * [CQRS and Event Sourcing](http://cqrsinfo.com/documents/cqrs-and-event-sourcing-synergy/)
 * [Think Before Coding - CQRS](http://thinkbeforecoding.com/tag/CQRS)
 * [Julien's blog - Software crafting and .NET tips, the agile way](http://julienletrouit.com/?tag=cqrs&lang=en)
 * [CQRS sur Windows Azure - in French](http://msdn.microsoft.com/fr-fr/magazine/gg983487.aspx)
@@ -566,6 +573,19 @@ used for reporting. This acts exactly the same: one builds query-oriented databa
   * [Towards an immutable domain model – immutability achieved (part 3)](http://blog.zilverline.com/2011/02/05/towards-an-immutable-domain-model-immutability-achieved-part-3/)
   * [Towards an immutable domain model – believe the type (part 4)](http://blog.zilverline.com/2011/02/07/towards-an-immutable-domain-model-–-believe-the-type-part-4/)
   * [Towards an immutable domain model – monads (part 5)](http://blog.zilverline.com/2011/02/10/towards-an-immutable-domain-model-monads-part-5/)
+* [Ian Mckay - CQRS - The new "it" architecture](http://avastmehearties.com/cqrs-the-new-it-architecture)
+* [yreynhout - blog](http://seabites.wordpress.com/)
+  * [Aggregates and their events](http://seabites.wordpress.com/2011/02/13/aggregates-and-their-events/)
+  * [Unit of Work and Repository](http://seabites.wordpress.com/2010/11/14/unit-of-work-and-repository/)
+
+## Code
+
+* [ddd-cqrs-sample Java, Spring, JPA...](http://code.google.com/p/ddd-cqrs-sample/)
+* [slashdotdash / rcqrs (ruby)](https://github.com/slashdotdash/rcqrs)
+* [cavalle / banksimplistic (ruby)](https://github.com/cavalle/banksimplistic)
+* [erikrozendaal / scala-event-sourcing-example (scala)](https://github.com/erikrozendaal/scala-event-sourcing-example)
+* [Mark Nijhof / Fohjin](https://github.com/MarkNijhof/Fohjin)
+* [Lokad CQRS](http://code.google.com/p/lokad-cqrs/)
 
 ## Podcast
 
@@ -623,11 +643,9 @@ used for reporting. This acts exactly the same: one builds query-oriented databa
 * [Udi Dahan - CQRS, race conditions, and sagas - oh my!](http://skillsmatter.com/podcast/design-architecture/udi-dahan-cqrs-race-conditions-and-sagas)
 * [Udi Dahan - CQRS, DDD and NServiceBus](http://www.infoq.com/interviews/dahan-cqrs-ddd-nservicebus)
 * [Jonathan Oliver - CQRS - An Introduction for Beginners](http://vimeo.com/9573973)
+  * Simple and really clear
 * [Jonathan Oliver - CQRS - Utah Code Camp 2010 - Part 1](http://vimeo.com/10493269)
 * [The Case for CQRS and Event Sourcing](http://vimeo.com/25801867)
 * [Command Query Responsibility Segregation - Udi Dahan](http://vimeo.com/8944337)
+* [CQRS and Event Sourcing with NCQRS](http://vimeo.com/28457510)
 
-## Not CRQS related but still interesting
-
-* [The Essence of Caching - Ehcache](http://www.java-tv.com/2011/04/05/the-essence-of-caching-ehcache/)
-* [JVM Internals - What Does the JVM Do?](http://www.java-tv.com/2011/08/08/jvm-internals-what-does-the-jvm-do/)
