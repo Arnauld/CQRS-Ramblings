@@ -19,13 +19,15 @@ the reads from the write. According to this, recently new approaches have been e
 have coined. 
 
 The most known is *CRQS* (Command and Query Responsibility Segregation), an all-in-one word that 
-embraces Domain Driven Design, CQS and Event Sourcing concepts. One of its evangelist Greg Young is 
-strongly encouraging this approach, and gives some really cool articles and interviews around this 
-(e.g. recently on QCon London 2011: [Events Are Not Just for Notifications][young-events]).
+embraces Domain Driven Design, CQS and Event Sourcing concepts. CQRS is CQS beyond the class level.
+
+One of its evangelist Greg Young is strongly encouraging this approach, and gives some really cool
+articles and interviews around this (e.g. recently on QCon London 2011: [Events Are Not Just for Notifications][young-events]).
 
 In short:
 
 > **Command** = **Write**
+
 > **Query** = **Read**
 
 ![CQRS Overview][cqrs-overview]
@@ -176,9 +178,11 @@ change in memory.
 
 Ok well, at this point one has almost all the `command` part of the schema. Let's see how events get
 published in order to update the `query` part.
+
 Due to consistancy issue, `public` events (as opposed to the `internal` events that gets fired within
 our domain model) should be published when the event store is up to date. That is when the aggregate
-is saved or the unit of work gets commited.
+is saved or the unit of work gets commited. 
+
 In the [sample CQRS code](https://github.com/gregoryyoung/m-r/blob/master/SimpleCQRS/EventStore.cs)
 events are published one by one once saved within the event store. I personally don't like this
 approach since it may requires that the publish is part of the current transaction, and furthermore
@@ -287,6 +291,42 @@ The read model consumes `events` and produces `DTO`
 [cqrs-overview]:https://lh5.googleusercontent.com/-75O4GDGMdyI/Tlk0Tpmp38I/AAAAAAAADIM/k9Y9aecZs5s/s800/overview.png
 [young-events]:http://www.infoq.com/presentations/Events-Are-Not-Just-for-Notifications
 [sdo]:http://www.ibm.com/developerworks/java/library/j-sdo
+
+
+```scala
+    trait CommandDispatcher {
+      def dispatch(command:Command) {
+      
+        val uow = UnitOfWork.get()
+        try {
+          uow.begin()
+          val handler = (lookupHandler(command) orElse {
+            throw UnsupportedCommand(command)
+          })
+          handler(command)
+          uow.commit()
+        }
+        catch {
+          case e => 
+            uow.rollback()
+            throw e
+        }
+      }
+    }
+```
+
+```scala
+  trait UnitOfWork {
+    def underlyingTx:Tx
+    var uncommittedEvents:List[_<:Event] = Nil
+    var unpublishedEvents:Stream[_<:VersionedEvent]
+    def commit () {
+      underlyingTx.commit
+      uncommittedEvents.clear
+      unpublishedEvents.publishAll
+    }
+  }
+```
 
 
 ## Greasy implementation notes
@@ -466,6 +506,17 @@ A good command is
     PersonMovedUpCommand(personId:ID, newAddress:Address)
     PersonAddressStree
 
+
+    //Command envelope 
+    "Envelope" : { 
+      "Headers" : { 
+          "MessageId" : "<CommandGuidHere>", 
+          "SentTime" : "2011-11-8T00:00:00Z", 
+          "ReceivedTime" : "2011-11-8T00:00:05Z"
+      }, 
+      "Body" : { <YourCommandMessageHere> } 
+    } 
+
 ## Service layer / Domain
 
 * No getter/setter only behavior
@@ -507,6 +558,8 @@ used for reporting. This acts exactly the same: one builds query-oriented databa
 ## Group/Mailing list
 
 * [DDD/CQRS Google Group](http://groups.google.com/group/dddcqrs)
+* Some ramblings around
+  * [Thoughts around REST, DDD, and CQRS: Models, Queries, and Commands](http://groups.google.com/group/the-design-of-distributed-applications/browse_thread/thread/f2295ec60ef87c77)
 
 ## Articles
 
@@ -551,6 +604,9 @@ used for reporting. This acts exactly the same: one builds query-oriented databa
   * [Command Query Separation?](http://codebetter.com/gregyoung/2009/08/13/command-query-separation/)
     *Separate command messages that change state from query messages that read state.*
   * [CQRS and Event Sourcing](http://cqrsinfo.com/documents/cqrs-and-event-sourcing-synergy/)
+* [Alberto Brandolini - blog](http://ziobrando.blogspot.com/)
+  * [CQRS Event Sourcing reference links](http://ziobrando.blogspot.com/2010/10/cqrs-event-sourcing-reference-links.html)
+  * [Loosely Coupled Complexity - Unleash the power of your Domain Model with Command Query Responsibility Segregation and Event Sourcing](http://www.slideshare.net/ziobrando/loosely-coupled-complexity-unleash-the-power-of-your-domain-model-with-command-query-responsibility-segregation-and-event-sourcing)
 * [Think Before Coding - CQRS](http://thinkbeforecoding.com/tag/CQRS)
 * [Julien's blog - Software crafting and .NET tips, the agile way](http://julienletrouit.com/?tag=cqrs&lang=en)
 * [CQRS sur Windows Azure - in French](http://msdn.microsoft.com/fr-fr/magazine/gg983487.aspx)
@@ -577,6 +633,7 @@ used for reporting. This acts exactly the same: one builds query-oriented databa
 * [yreynhout - blog](http://seabites.wordpress.com/)
   * [Aggregates and their events](http://seabites.wordpress.com/2011/02/13/aggregates-and-their-events/)
   * [Unit of Work and Repository](http://seabites.wordpress.com/2010/11/14/unit-of-work-and-repository/)
+* [Rob Ashton - CQRS is too complicated](http://codeofrob.com/archive/2011/09/28/cqrs-is-too-complicated.aspx)
 
 ## Code
 
@@ -586,6 +643,7 @@ used for reporting. This acts exactly the same: one builds query-oriented databa
 * [erikrozendaal / scala-event-sourcing-example (scala)](https://github.com/erikrozendaal/scala-event-sourcing-example)
 * [Mark Nijhof / Fohjin](https://github.com/MarkNijhof/Fohjin)
 * [Lokad CQRS](http://code.google.com/p/lokad-cqrs/)
+* [ncqrs / ncqrs (.net)](https://github.com/ncqrs/ncqrs)
 
 ## Podcast
 
@@ -619,6 +677,7 @@ used for reporting. This acts exactly the same: one builds query-oriented databa
   6. [Episode 6 - Interview with Jimmy Bogard](http://distributedpodcast.com/2011/episode-6-interview-with-jimmy-bogard)
   7. [Episode 007 - Interview With Ayende Rahien](http://distributedpodcast.com/2011/episode-007-interview-with-ayende-rahien)
   8. [Episode 8 - When to avoid CQRS](http://distributedpodcast.com/2011/episode-8-when-to-avoid-cqrs)
+  9. [Episode 9 - When to avoid CQRS - Clarified](http://distributedpodcast.com/2011/episode-9-when-to-avoid-cqrsclarified)
 * [Talking Domain-Driven Design with David Laribee - Part 1](http://deepfriedbytes.com/podcast/episode-6-talking-domain-driven-design-with-david-laribee-part-1/)
 * [Talking Domain-Driven Design with David Laribee - Part 2](http://deepfriedbytes.com/podcast/episode-7-talking-domain-driven-design-with-david-laribee-ndash-part-2/)
 
