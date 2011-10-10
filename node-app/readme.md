@@ -10,6 +10,7 @@ hummm... nous allons donc lui donner sa chance, et plus précisement utiliser la
 comme infrastructure de notre application.
 
 Commençons par glaner à gauche et à droite les modules dont nous aurons besoin, nous voulons:
+
 * un module pour faire du BDD
 * un module pour faire du TDD
 * un module pour la persistence de notre modèle, nous prendrons dans un 1er temps une base de données postgres
@@ -81,10 +82,10 @@ Assurons-nous que le simple "Hello world" marche:
   > have still successfully installed the module; however, you cannot use the
   > native bindings -- only the pure javascript bindings.
 
-## Dependencies
+## Simplifions et centralisons les dépendences...
 
-Installer toutes ses dépendances devient rapidement fastidieurx, surtout s'il faut le répéter à chaque fois
-que le projet est récupérer depuis les sources. En fait, il existe un moyen de centraliser et conserver ces
+Installer toutes ces dépendances une à une devient rapidement fastidieux, surtout s'il faut le répéter à chaque fois
+que le projet est récupérer depuis les sources. Heureusement, il existe un moyen de centraliser et conserver ces
 dépendances en créant un fichier `package.json`. Ce fichier est très similaire au fichier `pom.xml` de Maven.
 Il décrit de manière succinte l'appplication ainsi que ses dépendances.
 
@@ -111,4 +112,5 @@ Par example:
       "main": "app.js"
     }
 
-once created, simply type `npm install`  and this will install all required dependencies in one single step.
+Du coup, la récupération des dépendances est beaucoup plus immédiate grâce à la commande `npm install`. Toutes les dépendances
+sont ainsi installées en une unique commande.
