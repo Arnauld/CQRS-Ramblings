@@ -6,7 +6,7 @@ give it a chance through `node.js` infrastructure.
 
 ## Preparation
 
-### Install `nodejs`
+### Install **nodejs**
  
 Ensure "Hello world" works:
 
@@ -17,7 +17,7 @@ Ensure "Hello world" works:
     ~ _
 ```
 
-### Install `Webworker` (for actor like)
+### Install **Webworker** (for actor like)
   
 [node-webworker](https://github.com/pgriess/node-webworker)
 
@@ -30,7 +30,7 @@ Ensure "Hello world" works:
     ~ _
 ```
 
-### Install `vows` (for BDD)
+### Install **vows** (for BDD)
   
 [VowsJS](http://vowsjs.org/)
 
@@ -43,7 +43,7 @@ Ensure "Hello world" works:
     ~ _
 ```
 
-### Install `nodeunit` (for TDD)
+### Install **nodeunit** (for TDD)
 
 ```shell
     ~ npm install nodeunit
@@ -51,7 +51,7 @@ Ensure "Hello world" works:
     ~ _ 
 ```
 
-### Install `node-postgres` (Non-blocking PostgreSQL client)
+### Install **node-postgres** (Non-blocking PostgreSQL client)
 
 [node-postgres](https://github.com/brianc/node-postgres)
 
