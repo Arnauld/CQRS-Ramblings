@@ -1,0 +1,9 @@
+> Thinking in terms of state machines, there's an interesting alternative: we 
+> can store all the state transitions that led initial domain model to its
+> current state. This second perspective to application design has many 
+> interesting repercussions. In this approach, current state of domain is no 
+> longer as important as the earlier approach because it can be recreated just
+> by repeating all the transitions. This second approach is named 
+> **"Event sourcing"** where event is just a little familiar name for state 
+> transition.
+[Thoughts on Event sourcing](http://blog.nirav.name/2011/09/thoughts-on-event-sourcing.html)

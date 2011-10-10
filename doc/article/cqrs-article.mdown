@@ -634,6 +634,8 @@ used for reporting. This acts exactly the same: one builds query-oriented databa
   * [Aggregates and their events](http://seabites.wordpress.com/2011/02/13/aggregates-and-their-events/)
   * [Unit of Work and Repository](http://seabites.wordpress.com/2010/11/14/unit-of-work-and-repository/)
 * [Rob Ashton - CQRS is too complicated](http://codeofrob.com/archive/2011/09/28/cqrs-is-too-complicated.aspx)
+* [Mark Seemann - CQRS on Windows Azure](http://msdn.microsoft.com/en-us/magazine/gg983487.aspx)
+
 
 ## Code
 
@@ -697,8 +699,8 @@ used for reporting. This acts exactly the same: one builds query-oriented databa
     context.
   * (~37min.) DTO are screen centric and not transactional centric.
   * (~43min.) CAP theorem
-
 * [Greg Young - Simple is better](http://skillsmatter.com/podcast/design-architecture/simple-is-better)
+* [Greg Young - Discusses State Transitions in Domain-Driven Design and DDD Best Practices](http://www.infoq.com/interviews/greg-young-ddd)
 * [Udi Dahan - CQRS, race conditions, and sagas - oh my!](http://skillsmatter.com/podcast/design-architecture/udi-dahan-cqrs-race-conditions-and-sagas)
 * [Udi Dahan - CQRS, DDD and NServiceBus](http://www.infoq.com/interviews/dahan-cqrs-ddd-nservicebus)
 * [Jonathan Oliver - CQRS - An Introduction for Beginners](http://vimeo.com/9573973)
@@ -707,4 +709,4 @@ used for reporting. This acts exactly the same: one builds query-oriented databa
 * [The Case for CQRS and Event Sourcing](http://vimeo.com/25801867)
 * [Command Query Responsibility Segregation - Udi Dahan](http://vimeo.com/8944337)
 * [CQRS and Event Sourcing with NCQRS](http://vimeo.com/28457510)
-
+* [CQRS Pattern, Event Sourcing and Their Real World Applications](http://skillsmatter.com/podcast/open-source-dot-net/neil-robbins-cqrs-pattern-event-sourcing-and-their-real-world-applications)
