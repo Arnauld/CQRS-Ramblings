@@ -1,0 +1,20 @@
+{
+  "author": "Arnauld",
+  "name": "scrum-board",
+  "description": "Scrum board: rambling around [D|T|B]DD",
+  "version": "0.0.1",
+  "repository": {
+    "url": ""
+  },
+  "engines": {
+    "node": "*"
+  },
+  "dependencies": {
+    "webworker": "*",
+    "vows": "*",
+    "nodeunit": "*",
+    "pg": "*"
+  },
+  "devDependencies": {},
+  "main": "app.js"
+}
