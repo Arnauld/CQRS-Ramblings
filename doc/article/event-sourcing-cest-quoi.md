@@ -19,7 +19,7 @@ Au bout d'un moment, notre panier pourrait ressembler à cela:
       "Event Centric: Finding Simplicity in Complex Systems",
       "Streamlined Object Modeling: Patterns, Rules, and Implementation"
     ]
-    ```
+```
 
 Quand on se décide finalement de passer la commande, oh stupeur on en a pour $201.20. Notre budget ne le permettant pas, 
 après une sélection drastique notre panier se déleste de deux livres, et on ne conserve que:
@@ -29,7 +29,7 @@ après une sélection drastique notre panier se déleste de deux livres, et on n
       "Domain-Driven Design: Tackling Complexity in the Heart of Software",
       "Streamlined Object Modeling: Patterns, Rules, and Implementation"
     ]
-    ```
+```
 
 Le montant s'élève alors à $97.66, ce qui est acceptable pour notre budget actuel. La commande passée, il ne reste plus rien
 des deux livres que nous souhaitions acheter et que nous avons dû mettre de côté faute de moyen.
@@ -51,7 +51,7 @@ pourrait être similaire à:
      BookRemovedOnBilling("Event Centric: Finding Simplicity in Complex Systems"),
      BookRemovedOnBilling("Streamlined Object Modeling: Patterns, Rules, and Implementation")
    ]
-   ```
+```
 
 En conservant, l'ensemble des changements d'états on se rend compte que le livre 
 "Patterns of Enterprise Application Architecture" a fait une apparition aussi dans le panier, et que les deux
