@@ -1,14 +1,5 @@
 # Introduction
 
-Le but de ce projet est d'implémenter une application complète en reprenant les principes et motifs
-CQRS. Le développement de l'application sera guidé par les approches DDD, TDD et BDD.
-
-Dans [The Pragmatic Programmer](http://pragprog.com/refer/pragpub24/titles/tpp/the-pragmatic-programmer), 
-il est conseillé que "l'on apprenne au moins un langage de programmation chaque année" (
-*"Learn at least one new language every year"*). Il paraitrait que le `javascript` soit un vrai langage,
-hummm... nous allons donc lui donner sa chance, et plus précisement utiliser la plateforme **NodeJS**
-comme infrastructure de notre application.
-
 Commençons par glaner à gauche et à droite les modules dont nous aurons besoin, nous voulons:
 
 * un module pour faire du BDD

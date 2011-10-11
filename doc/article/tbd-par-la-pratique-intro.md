@@ -1,8 +1,14 @@
 # [T|B|D]DD par la pratique
 
-Dans cette série, nous allons tenter de mettre en pratique la théorie autour des notions d'Event Sourcing et de CQRS. 
+Dans cette série, nous allons tenter de mettre en pratique la théorie autour des notions 
+d'[Event Sourcing][event-sourcing] et de [CQRS][cqrs] (pour plus d'informations voir [CQRS links][cqrs-links]).
+
 Pour ce faire, nous allons développer une nouvelle application selon les principes du Test Driven Developpement,
 du Behavior Driven Developpement et du Domain Driven Developpement.
+
+[event-sourcing]:http://martinfowler.com/eaaDev/EventSourcing.html
+[cqrs]:http://martinfowler.com/bliki/CQRS.html
+[cqrs-links]:http://technbolts.tumblr.com/post/10529825424
 
 Dans [The Pragmatic Programmer](http://pragprog.com/refer/pragpub24/titles/tpp/the-pragmatic-programmer), 
 il est conseillé que "l'on apprenne au moins un langage de programmation chaque année" (
@@ -10,7 +16,6 @@ il est conseillé que "l'on apprenne au moins un langage de programmation chaque
 hummm... nous allons donc lui donner sa chance, et plus précisement utiliser la plateforme **NodeJS**
 comme infrastructure de notre application. Il s'agira pour moi de découvrir NodeJS et une tentative de
 se reconcillier avec le javascript.
-
 
 ## Notre domaine et notre langage commun (Ubiquitous language)
 
@@ -35,18 +40,22 @@ même langage que mon client.
 ### Le contexte
 
 Nous allons faire un bref rappel de la terminologie et des différents concepts que nous utiliserons dans le cadre
-notre application (pour un présention plus poussées et plus précise se référer à []()).
+notre application (pour un présention plus poussées et plus précise se référer à [Scrum et XP depuis les Tranchées][scrum-xp-trenches]).
 En précisant, le cadre de notre langage nous definissons ainsi son contexte d'application (Bounded Context) ainsi,
 même si dans d'autre situation les mots ont une autre signification, voici ici la leur. Et si la théorie de
 scrum a une autre définition ou une autre terminologie, nous sommes protégé par notre contexte, qui défini les
 frontières d'application de notre vocabulaire à notre application.
 
+[scrum-xp-trenches]:ftp://ftp-developpez.com/henrik-kniberg/agile/scrum/ScrumAndXpFromTheTrenchesFrench.pdf
+
 Afin de limiter les confusions, nous utiliserons essentiellement les termes anglais relatifs à scrum.
 
 Notre application devra permettre de gérer plusieurs **projets**. A chaque **projet** sera associé un **backlog**,
 une **équipe** et un ensemble de **sprint**.
-Le **backlog** servira à récolter les besoins fonctionnels ou techniques émis par le client, ces entrées seront
-appellées **story**. Une **équipe** sera constituée d'un **product owner**, d'un **scrum master** et de plusieurs
+Le **backlog** servira à récolter les besoins fonctionnels ou techniques émis par le client, à chaque besoins
+correspondra une entrée dans le backlog, et seront appellées **story**. 
+
+Une **équipe** sera constituée d'un **product owner**, d'un **scrum master** et de plusieurs
 **developer**s. Le **product owner** ainsi que le **scrum master** pourront définir des **sprints** et leurs
 associés des tâches (**task**). Ces **tâches**s pourront être attachées à une **story** mais ce n'est pas obligatoire, et ce,
 afin d'avoir une plus grande souplesse d'organisation, notament concernant les tâches techniques. En revanche, il est
@@ -115,6 +124,5 @@ C'est parti!!
   plus considéré comme le sprint courant.
 * En tant que **membres de l'équipe**, je peux consulter la liste des sprints terminés mais je ne peux
   pas les modifier si bien que je peux toujours consulter les archives.
-
 
 
