@@ -23,7 +23,7 @@ Au bout d'un moment, notre panier pourrait ressembler à cela:
 ```
 
 Quand on se décide finalement de passer la commande, oh stupeur on en a pour $201.20. Notre budget ne le permettant pas, 
-après une sélection drastique notre panier se déleste de deux livres, et on ne conserve que:
+après une sélection drastique, notre panier se déleste de deux livres et devient:
 
 ```javascript
     [
@@ -55,7 +55,7 @@ En conservant, l'ensemble des changements d'états on se rend compte que le livr
 "Patterns of Enterprise Application Architecture" a fait une apparition aussi dans le panier, ainsi que les deux livres
 enlevés à la fin.
 
-Maintenant en conservant l'historique, les intentions de l'utilisateurs on obtient:
+Maintenant en conservant l'historique des intentions de l'utilisateurs on obtient:
 
 ```javascript
    [
@@ -78,10 +78,14 @@ On peux désormais constater que les deux derniers livres ont été enlevés du 
 en cliquant sur les livres présentées dans la section "Les clients ayant acheté cet article ont également acheté",
 ce qui renforce l'interêt de cette section. Ceci est très instructifs, et va permettre
 de cibler les prochaines suggestions d'achats en privilégiant ces livres. En effet, s'ils ont déjà suscité de 
-l'interêt jusqu'au moment de l'achat, il est for probable que cela se reproduise.
+l'interêt jusqu'au moment de l'achat, il est fort probable que cela se reproduise.
 
 
 Ce qui est interessant, c'est que même si l'on ne dispose pas encore de notre mécanique de suggestions ou de nos
 outils d'analyse, l'information est présente et pourra être analysée lorsque nous aurons les outils adéquats.
-D'autre part, on dispose de toutes les informations pour "rejouer" la constitution de notre panier.
+
+D'autre part, on dispose de toutes les informations pour "rejouer" la constitution de notre panier, notre modèle
+est beaucoup plus riche que précédement et peux permettre une bien plus grande flexibilité.
+
+
 
