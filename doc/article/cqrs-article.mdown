@@ -635,7 +635,7 @@ used for reporting. This acts exactly the same: one builds query-oriented databa
   * [Unit of Work and Repository](http://seabites.wordpress.com/2010/11/14/unit-of-work-and-repository/)
 * [Rob Ashton - CQRS is too complicated](http://codeofrob.com/archive/2011/09/28/cqrs-is-too-complicated.aspx)
 * [Mark Seemann - CQRS on Windows Azure](http://msdn.microsoft.com/en-us/magazine/gg983487.aspx)
-
+* [Erik Rozendaal - Towards an immutable domain model (series)](http://blog.zilverline.com/?s=immutable+domain+model)
 
 ## Code
 
@@ -710,3 +710,4 @@ used for reporting. This acts exactly the same: one builds query-oriented databa
 * [Command Query Responsibility Segregation - Udi Dahan](http://vimeo.com/8944337)
 * [CQRS and Event Sourcing with NCQRS](http://vimeo.com/28457510)
 * [CQRS Pattern, Event Sourcing and Their Real World Applications](http://skillsmatter.com/podcast/open-source-dot-net/neil-robbins-cqrs-pattern-event-sourcing-and-their-real-world-applications)
+* [Jason Smale - Command and Query Segregation - 2](http://vimeo.com/30171696)

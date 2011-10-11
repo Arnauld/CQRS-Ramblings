@@ -114,3 +114,17 @@ Par example:
 
 Du coup, la récupération des dépendances est beaucoup plus immédiate grâce à la commande `npm install`. Toutes les dépendances
 sont ainsi installées en une unique commande.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
