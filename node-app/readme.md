@@ -249,7 +249,8 @@ Dans une console, démarrons notre script de test continu `watchr watchr-conf.rb
 Commençons par le test fonctionnel de création d'un projet:
 
 `specs/project_specs.js`
-```javascript
+
+```js
 var vows = require('vows'),
     assert = require('assert');
 
@@ -299,7 +300,8 @@ On remarquera que notre javascript n'est pas tout à fait valide et qu'il manque
 Nos tests échouent dû à l'absence de notre fichier `lib/domain.js`
 
 `lib/domain.js`
-```
+
+```js
 /**
  *  Project
  */
@@ -346,6 +348,16 @@ Start behavior tests
 
 Le projet créé est bien une instance de `Projet` en revanche il ne dispose pas de la méthode `name` qui devrait
 permettre de renvoyer son nom. Fixons encore une fois le `;` qui manque, et rajoutons la méthode manquante.
+
+
+`lib/domain.js`
+
+```js
+Project.prototype = {
+  name : function () { return this._name; }
+};
+```
+
 
 ```
 Checking lib/domain.js
