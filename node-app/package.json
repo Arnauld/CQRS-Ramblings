@@ -13,7 +13,8 @@
     "webworker": "*",
     "vows": "*",
     "nodeunit": "*",
-    "pg": "*"
+    "pg": "*",
+    "node-uuid": "*"
   },
   "devDependencies": {},
   "main": "app.js"

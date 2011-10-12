@@ -6,7 +6,7 @@ d'[Event Sourcing][event-sourcing] et de [CQRS][cqrs] (pour plus d'informations 
 Pour ce faire, nous allons développer une nouvelle application selon les principes du Test Driven Developpement,
 du Behavior Driven Developpement et du Domain Driven Developpement.
 
-[event-sourcing]:http://martinfowler.com/eaaDev/EventSourcing.html
+[event-sourcing]:http://technbolts.tumblr.com/post/11317032794
 [cqrs]:http://martinfowler.com/bliki/CQRS.html
 [cqrs-links]:http://technbolts.tumblr.com/post/10529825424
 

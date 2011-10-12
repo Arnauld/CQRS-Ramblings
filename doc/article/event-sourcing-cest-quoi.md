@@ -1,6 +1,6 @@
 ## L'Event sourcing c'est quoi?
 
-voir [Event Sourcing](event-sourcing]:http://martinfowler.com/eaaDev/EventSourcing.html)
+Martin Fowler décrit l'[Event Sourcing](event-sourcing]:http://martinfowler.com/eaaDev/EventSourcing.html) comme:
 
 > Captures all changes to an application state as a sequence of events.
 
@@ -22,7 +22,7 @@ Au bout d'un moment, notre panier pourrait ressembler à cela:
     ]
 ```
 
-Quand on se décide finalement de passer la commande, oh stupeur on en a pour $201.20. Notre budget ne le permettant pas, 
+Quand on se décide finalement de passer notre commande, oh stupeur! on en a pour $201.20. Notre budget ne le permettant pas, 
 après une sélection drastique, notre panier se déleste de deux livres et devient:
 
 ```javascript
@@ -86,6 +86,11 @@ outils d'analyse, l'information est présente et pourra être analysée lorsque 
 
 D'autre part, on dispose de toutes les informations pour "rejouer" la constitution de notre panier, notre modèle
 est beaucoup plus riche que précédement et peux permettre une bien plus grande flexibilité.
+En effet, on a pu ajouter les évènements `PeopleAlsoBought` et `Search` sans que cela ait d'impact sur la constitution
+finale de notre panier.
 
-
+Enfin, l’un des points les plus importants est que l’état final de notre panier importe peu. 
+Cet état n’a plus besoin d’être conservé, puisqu’il est possible de le reconstruire à partir des évènements 
+qui le décrivent. Chaque évènement décrit une transition vers l’état a atteindre. En conservant uniquement 
+les évènements, il est possible de reconstruire l’objet.
 
