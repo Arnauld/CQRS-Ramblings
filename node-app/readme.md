@@ -299,6 +299,8 @@ Error: Cannot find module '../lib/domain'
 On remarquera que notre javascript n'est pas tout à fait valide et qu'il manque deux `;` lignes 4 et 9.
 Nos tests échouent dû à l'absence de notre fichier `lib/domain.js`
 
+Après quelques tatonements, on obtient le fichier suivant:
+
 `lib/domain.js`
 
 ```js
