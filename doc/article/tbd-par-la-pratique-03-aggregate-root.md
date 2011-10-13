@@ -114,6 +114,7 @@ modules.
 Le test correspondant à la relecture peut alors s'écrire:
 
 `test/project_test.js`
+
 ```js
     exports["a project can be reload from a simple history"] = function (test) {
         var project_id = uuid();
@@ -133,6 +134,7 @@ Rajontons progressivement la méthode `loadFromHistory` sur notre module et sur 
 Nous obtenons alors:
 
 `lib/project.js`
+
 ```js
     // public method
     Project.prototype = {
@@ -241,5 +243,5 @@ Le code complet de `lib/project.js` est à ce stade:
     };
 
     exports.Project = Project;
-``
+```
 
