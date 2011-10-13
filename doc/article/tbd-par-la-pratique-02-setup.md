@@ -501,6 +501,33 @@ sur l'unicité de notre `uuid` et sa représentation:
   }).export(module); // Export the Suite
 ```
 
+Notre console affiche donc fièrement:
+
+```
+  Start tests
+  --------------------------
+
+  project_test
+  ✔ create_project return the specified name
+  ✔ create_project generate a valid uuid
+
+  OK: 2 assertions (15ms)
+
+  Start behavior tests
+  --------------------------
+
+  ♢ Project
+
+    A new project created with a given name
+      ✓ should return an instance of Project
+      ✓ should have the specified name
+      ✓ and a generated uuid
+    New projects
+      ✓ should have differents uuid
+   
+  ✓ OK » 4 honored (0.003s)
+```
+
 # Et l'Event Sourcing dans tout ça ??
 
 Tout ça c'est bien mais ce n'est pas très conforme avec notre idée de l'[Event Sourcing][event-sourcing].

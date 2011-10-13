@@ -3,7 +3,6 @@ var uuid = require('node-uuid');
 /**
  *  Project
  */
-
 var ProjectCreated = function(project_id, project_name) {
 	// wrapping functions to make values *immutables*
     this.event_type   = function() { return "project_created"; };
