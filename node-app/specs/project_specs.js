@@ -1,18 +1,18 @@
 var vows = require('vows'),
     assert = require('assert');
 
-var domain = require('../lib/domain');
+var prj = require('../lib/project');
 
 var UUID_PATTERN = /[0-9a-f]{8}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{8}/;
 
 vows.describe('Project').addBatch({
     'A new project created with a given name': {
         topic: function () {
-            return domain.create_project("mccallum");
+            return prj.create("mccallum");
         },
 
         'should return an instance of Project' : function(project) {
-            assert.instanceOf (project, domain.Project);
+            assert.instanceOf (project, prj.Project);
         },
 
         'should have the specified name': function (project) {
@@ -25,7 +25,7 @@ vows.describe('Project').addBatch({
     },
     'New projects': {
         topic: function () { 
-            return [ domain.create_project("mccallum"), domain.create_project("mccallum")];
+            return [ prj.create("mccallum"), prj.create("mccallum")];
         },
 
         'should have differents uuid': function (result) {
