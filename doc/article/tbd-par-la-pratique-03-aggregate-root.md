@@ -13,7 +13,7 @@ Il est alors nécessaire de modifier dans les fichiers `specs/project_specs.js` 
 Afin de completer un peu notre projet ajoutons une méthode `rename` afin de pouvoir modifier le nom
 de notre projet. Successivement nous:
 
-1. ajoutons le test suivant (`test/project_test.js`)
+* ajoutons le test suivant (`test/project_test.js`)
   
   ```js
     exports["renaming a project must change its name according to new one"] = function (test) {
@@ -23,8 +23,9 @@ de notre projet. Successivement nous:
         test.done();
     };
   ```
-2. vérifions que notre test échoue à cause de l'absence de la méthode
-3. ajoutons ensuite la méthode `rename` sur notre project (`lib/project.js`)
+
+* vérifions que notre test échoue à cause de l'absence de la méthode
+* ajoutons ensuite la méthode `rename` sur notre project (`lib/project.js`)
   
   ```js
     // public method
@@ -35,7 +36,8 @@ de notre projet. Successivement nous:
         }
     };
   ```
-4. ajoutons le test indiquant que le changement de nom doit entrainer la création d'un nouvel évènement (`test/project_test.js`)
+
+* ajoutons le test indiquant que le changement de nom doit entrainer la création d'un nouvel évènement (`test/project_test.js`)
   
   ```js
     exports["renaming a project must add an `event` in its history of type 'project_renamed'"] = function (test) {
@@ -50,8 +52,10 @@ de notre projet. Successivement nous:
         test.done();
     };
   ```
-5. vérifions que notre test échoue
-6. et modifions finalement la méthode `rename` pour générer un nouvel évènement et sa gestion
+
+* vérifions que notre test échoue
+
+* modifions finalement la méthode `rename` pour générer un nouvel évènement et sa gestion
   dans la méthode apply (`lib/project.js`)
   
   ```js
