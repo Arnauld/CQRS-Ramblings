@@ -3,11 +3,11 @@ var vows = require('vows'),
 
 var domain = require('../lib/domain');
 
-var UUID_PATTERN = /[0-9a-f]{8}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{8}/
+var UUID_PATTERN = /[0-9a-f]{8}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{8}/;
 
 vows.describe('Project').addBatch({
     'A new project created with a given name': {
-        topic: function () { 
+        topic: function () {
             return domain.create_project("mccallum");
         },
 

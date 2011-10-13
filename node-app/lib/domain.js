@@ -1,20 +1,11 @@
-/**
- * User
- */
-var User = function(screen_name) {
-	this._screen_name = screen_name;
-};
-
-User.prototype = {
-	screen_name : function() { return _screen_name; }
-};
+var uuid = require('node-uuid');
 
 /**
  *  Project
  */
-var Project = function(project_name) {
+var Project = function(uuid, project_name) {
 	this._name = project_name;
-	this._uuid = require('node-uuid')();
+	this._uuid = uuid;
 };
 
 Project.prototype = {
@@ -23,7 +14,7 @@ Project.prototype = {
 };
 
 exports.create_project = function(project_name) {
-	return new Project(project_name);
+	return new Project(uuid(), project_name);
 };
 
 exports.Project = Project;

@@ -80,7 +80,7 @@ Afin de décrire nos propres `User Story` nous utiliserons le modèle *standard*
 * Je peux  < But >,
 * Si bien que  < Justification >
 
-C'est parti!!
+C'est parti!! voici en vrac quelques idées de stories pour notre application.
 
 ### Generalités: Projet, Equipe
 

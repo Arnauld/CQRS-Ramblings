@@ -360,6 +360,7 @@ Project.prototype = {
 };
 ```
 
+Nous obtenons finalement la sortie suivante:
 
 ```
 Checking lib/domain.js
@@ -382,5 +383,7 @@ Start behavior tests
 ```
 
 Hourra!!
+
+Tout ça c'est bien mais ce n'est pas très conforme avec notre idée de l'[Event Sourcing][event-sourcing]
 
 
