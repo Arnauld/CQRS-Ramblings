@@ -259,7 +259,10 @@ d'autres technologies.
 
 Dans une console, démarrons notre script de test continu `watchr watchr-conf.rb`.
 
-Commençons par le test fonctionnel de création d'un projet:
+Commençons par le test fonctionnel de création d'un projet, nous voulons que la création d'un projet:
+
+* retourne un objet de type `Project`
+* retourne un projet dont le nom est bien celui fournit
 
 `specs/project_specs.js`
 
@@ -309,10 +312,13 @@ Après la sauvegarde, on obtient la sortie suivante sur la console:
 
 ```
 
-On remarquera que notre javascript n'est pas tout à fait valide et qu'il manque deux `;` lignes 4 et 9.
-Nos tests échouent dû à l'absence de notre fichier `lib/domain.js`
+On remarquera que notre javascript n'est pas tout à fait valide et qu'il manque deux `;` aux lignes 4 et 9.
+Par ailleurs, nos tests échouent dû à l'absence de notre fichier `lib/domain.js`, ce qui est normal nous ne
+l'avons pas encore écrit!
 
-Après quelques tatonements, on obtient le fichier suivant:
+Après quelques tatonements (comment fait-on l'[OOP en javascript][]...), on obtient le fichier suivant:
+
+[OOP en javascript]:https://developer.mozilla.org/en/Introduction_to_Object-Oriented_JavaScript
 
 `lib/domain.js`
 
@@ -328,6 +334,8 @@ Après quelques tatonements, on obtient le fichier suivant:
     return new Project(project_name);
   };
 
+  // tells nodeJS to make the `Project` visible from outside this file
+  // when using `require`
   exports.Project = Project
 ```
 
@@ -397,7 +405,9 @@ Nous obtenons finalement la sortie suivante:
 
 Hourra!!
 
-Je passe rapidement sur la génération automatique d'un `uuid` pour notre projet, et notre code ressemble désormais à:
+Je passe rapidement sur la génération automatique d'un `uuid` pour notre projet (nous utilisons pour cela
+le module `node-uuid` qui fournit, via la variable uuid definie par le `require`, une méthode de génération), 
+et notre code ressemble désormais à:
 
 `lib/domain.js`
 
@@ -418,13 +428,14 @@ Je passe rapidement sur la génération automatique d'un `uuid` pour notre proje
   };
 
   exports.create_project = function(project_name) {
-    return new Project(uuid(), project_name);
+    var generated_id = uuid(); // ask `node-uuid` to generate a new one
+    return new Project(, project_name);
   };
 
   exports.Project = Project;
 ```
 
-Des tests unitaires ont été ajouté avant chaque ajout de méthode sur notre `classe` `Project` et ressemble
+Des tests unitaires ont été ajoutés avant chaque ajout de méthode sur notre `classe` `Project` et ressemble
 désormais à:
 
 `test/project_test.js`
@@ -493,7 +504,10 @@ sur l'unicité de notre `uuid` et sa représentation:
 # Et l'Event Sourcing dans tout ça ??
 
 Tout ça c'est bien mais ce n'est pas très conforme avec notre idée de l'[Event Sourcing][event-sourcing].
-En effet, la création du projet consiste bien en une transition d'état de *rien* vers *un nouveau projet*.
+En effet, la création du projet consiste bien en une transition d'état de *rien* vers *un nouveau projet*,
+et nous ne conservons aucune données de cette transition. Qui plus est, le projet est porteur de son état,
+il n'est donc pas possible de suivre les modifications qu'il subit, comme un changement de nom.
+
 Rajoutons donc un évènement `ProjectCreated`, cet évènement sera porteur du nom du projet. Mais que deviens
 notre `uuid` ? sa valeur est portée par le projet, et nous souhaitons qu'un projet puisse être reconstruit
 uniquement à partir de ses évènements. Nous déplaçons donc la génération du `uuid` et considérons que celui-ci
@@ -655,7 +669,9 @@ Et tous nos tests passent! un peu de refactoring et voila finalement notre code:
 ```
 
 Restons sur un succès, et arrêtons nous là aujourd'hui.
+
 Dans notre prochain article, nous généraliserons la gestion de l'historique afin de pouvoir la réutiliser
 dans nos autres entités. Nous nous inspererons du design des `AggregateRoot` tel que généralement décrit dans
 [Super Simple CQRS Example - github](http://github.com/gregoryyoung/m-r).
 Pour plus d'information, je vous invite à consulter les liens [ici](http://technbolts.tumblr.com/post/11317032794).
+Et nous mettrons en place la reconstruction d'un objet par son historique.
