@@ -80,7 +80,8 @@ Assurons-nous que le simple "Hello world" marche:
   > have still successfully installed the module; however, you cannot use the
   > native bindings -- only the pure javascript bindings.
 
-Très bien, prenons ça pour argent comptant dans un premier temps.
+Très bien, prenons ça pour argent comptant dans un premier temps, et nous nous contenterons de la version
+pure javascript (qui devrait suffir amplement pour démarrer).
 
 ### Installer **node-uuid** (Generation de UUID de type 4)
 
@@ -183,13 +184,13 @@ plus malin afin de ne pas pénaliser notre environement en lançant l'intégrali
 
 Parmis ces `jobs` nous allons aussi mettre en place un outil de vérification de syntaxe. L'execution du javascript
 étant relativement permissive dans certains environements d'execution, nous aurons ainsi une syntaxe plus propre,
-et plus portable.
+et plus portable. Cette vérification sera faite via la bibliothèque `jslint`.
 
 L'outils que nous allons utilisé est un script Ruby appellé [`watchr`][watchr]. Il permet de brancher des appels de 
 fonctions à chaque fois qu'un fichier *surveillé* est modifié. La liste des fichiers surveillés est déterminée
 par une expression régulière.
 
-Installation de [`watchr`][watchr]
+Installation de [`watchr`][watchr] (sous entend que ruby et rubygem soit correctement installé)
 
 [watchr]:https://github.com/mynyml/watchr
 
@@ -202,12 +203,12 @@ Installation de jslint (module NodeJS) afin de tester en continue la syntaxe jav
 
 Le fichier de configuration de `watchr` indique:
 * que nous surveillons tous les fichiers `js` du dossier `lib` et pour chacun d'eux, en cas de modification,
-  nous déclencherons l'execution du program `jslint` sur le fichier détecté, lançons les tests unitaires,
+  nous déclenchons l'execution du program `jslint` sur le fichier détecté, lançons les tests unitaires,
   et les tests fonctionels.
 * que nous surveillons tous les fichiers `js` du dossier `test` et pour chacun d'eux, 
-  en cas de modification, nous déclencherons l'execution des tests.
-* que nous surveillons tous les fichiers `js` du dossier `specs` pour chacun d'eux, 
-  en cas de modification, nous déclencherons l'execution des tests fonctionnels.
+  en cas de modification, nous vérifions sa syntaxe et déclenchons l'execution de tous tests.
+* que nous surveillons tous les fichiers `js` du dossier `specs` et pour chacun d'eux, 
+  en cas de modification, nous vérifions sa syntaxe et déclenchons l'execution des tests fonctionnels.
 
 `watchr-conf.rb`
 
@@ -313,8 +314,8 @@ Après la sauvegarde, on obtient la sortie suivante sur la console:
 ```
 
 On remarquera que notre javascript n'est pas tout à fait valide et qu'il manque deux `;` aux lignes 4 et 9.
-Par ailleurs, nos tests échouent dû à l'absence de notre fichier `lib/domain.js`, ce qui est normal nous ne
-l'avons pas encore écrit!
+Par ailleurs, nos tests échouent dû à l'absence de notre fichier `lib/domain.js`, ce qui est normal puisque
+nous ne l'avons pas encore écrit!
 
 Après quelques tatonements (comment fait-on l'[OOP en javascript][]...), on obtient le fichier suivant:
 
@@ -369,6 +370,7 @@ Après sauvegarde:
   ✗ Errored » 1 honored ∙ 1 errored (0.008s)
 ```
 
+Un de nos tests fonctionnel passe et l'autre échoue lamentablement.
 Le projet créé est bien une instance de `Projet` en revanche il ne dispose pas de la méthode `name` qui devrait
 permettre de renvoyer son nom. Fixons encore une fois le `;` qui manque, et rajoutons la méthode manquante.
 
@@ -422,6 +424,7 @@ et notre code ressemble désormais à:
     this._uuid = uuid;
   };
 
+  // *public* methods
   Project.prototype = {
     name : function () { return this._name; },
     uuid : function () { return this._uuid; }
@@ -535,7 +538,7 @@ En effet, la création du projet consiste bien en une transition d'état de *rie
 et nous ne conservons aucune données de cette transition. Qui plus est, le projet est porteur de son état,
 il n'est donc pas possible de suivre les modifications qu'il subit, comme un changement de nom.
 
-Rajoutons donc un évènement `ProjectCreated`, cet évènement sera porteur du nom du projet. Mais que deviens
+Rajoutons donc un évènement `ProjectCreated`, cet évènement sera porteur du nom du projet. Mais que devient
 notre `uuid` ? sa valeur est portée par le projet, et nous souhaitons qu'un projet puisse être reconstruit
 uniquement à partir de ses évènements. Nous déplaçons donc la génération du `uuid` et considérons que celui-ci
 est un attribut de notre évènement.
@@ -557,7 +560,7 @@ Commençons par écrire les tests unitaires qui décrivent ce que nous souhaiton
   };
 ```
 
-Et la console nous affiche:
+Et la console nous affiche un échec dû à l'absence de notre méthode `events()` utilisée pour récupérer l'historique:
 
 ```
   Checking test/project_test.js
@@ -580,10 +583,64 @@ Et la console nous affiche:
       ...
 ```
 
+
+Après quelques cycles (red+green+refactor) où nous rajoutons la méthode `events` qui renvoie systématiquement un 
+tableau vide, puis un objet bidon. 
+
+Notre fichier de tests resemblent à:
+
+```js
+  ...
+  exports["a new project must have an `events` method to retrieve its history"] = function (test) {
+    var project = domain.create_project("mccallum");
+
+    var events = project.events();
+    test.ok(events instanceof Array);
+    test.done();
+  };
+  exports["a new project must have a single `event` in its history"] = function (test) {
+    var project = domain.create_project("mccallum");
+
+    var events = project.events();
+    test.ok(events instanceof Array);
+    test.equal(events.length, 1);
+    test.done();
+  };
+  exports["a new project must have a single `event` in its history of type 'project_created'"] = function (test) {
+    var project = domain.create_project("mccallum");
+
+    var events = project.events();
+    test.ok(events instanceof Array);
+    test.equal(events.length, 1);
+    test.equal(events[0].event_type(), "project_created");
+    test.done();
+  };
+```
+
+Et notre console affiche désormais que nous bloquons désormais sur le type de notre évènement.
+
+```
+  Start tests
+  --------------------------
+
+  project_test
+  ✔ create_project return the specified name
+  ✔ create_project generate a valid uuid
+  ✔ a new project must have an `events` method to retrieve its history
+  ✔ a new project must have a single `event` in its history
+  ✖ a new project must have a single `event` in its history of type 'project_created'
+
+  TypeError: Object dummy_event has no method 'event_type'
+      at /Users/arnauld/Projects/cqrs-ramblings/node-app/test/project_test.js:38:23
+  ...  
+  FAILURES: 1/8 assertions failed (11ms)
+```
+
+
 Modifions notre méthode de création de projet en passant non plus le nom et l'identifiant du projet mais l'évènement
 souhaité. Dans la foulée nous rajoutons la méthode `apply` qui va appliquer cet évènement à notre projet. De la même
 manière que si l'on rejouait l'historique du projet.
-Notre code ressemble désormais à (je passe toutes les petites galères de syntaxes javascript jslint étant là pour
+Notre code ressemble désormais à (je passe toutes les petites galères de syntaxes javascript, jslint étant là pour
 me rappeller à l'ordre à chaque sauvegarde):
 
 `lib/domain.js`
@@ -610,6 +667,7 @@ me rappeller à l'ordre à chaque sauvegarde):
   Project.prototype = {
     name : function () { return this._name; },
     uuid : function () { return this._uuid; },
+    events: function () { return ["dummy_event"]; },
     apply: function (event) {
       switch(event.event_type()) {
         case "project_created" :
@@ -629,42 +687,30 @@ me rappeller à l'ordre à chaque sauvegarde):
   exports.Project = Project;
 ```
 
-Après sauvegarde, on vérifie que les tests précédents continuent de fonctionner correctement:
+Après sauvegarde, on vérifie que les tests précédents continuent de fonctionner correctement, même
+après notre refactoring.
+Hourra!! même nos tests fonctionnels continuent de passer. 
 
 ```
-...
+  Start behavior tests
+  --------------------------
 
-Start tests
---------------------------
+  ♢ Project
 
-project_test
-✔ create_project return the specified name
-✔ create_project generate a valid uuid
-✖ create_project must generate an event of type 'ProjectCreated' in history
-
-TypeError: Object #<Object> has no method 'events'
-    at /Users/arnauld/Projects/cqrs-ramblings/node-app/test/project_test.js:20:26
-    ...
-
-
-FAILURES: 1/3 assertions failed (8ms)
-
-Start behavior tests
---------------------------
-
-♢ Project
-
-  A new project created with a given name
-    ✓ should return an instance of Project
-    ✓ should have the specified name
-    ✓ and a generated uuid
-  New projects
-    ✓ should have differents uuid
- 
-✓ OK » 4 honored (0.003s)
+    A new project created with a given name
+      ✓ should return an instance of Project
+      ✓ should have the specified name
+      ✓ and a generated uuid
+    New projects
+      ✓ should have differents uuid
+   
+  ✓ OK » 4 honored (0.002s)
 ```
 
-Hourra!! même nos tests fonctionnels continuent de passer. Ajoutons désormais l'historique à notre projet.
+Nous avons toujours le même test unitaire qui ne passe pas puisque nous n'avons pas modifié la gestion de
+l'historique encore.
+
+Ajoutons désormais l'historique à notre projet.
 Et tous nos tests passent! un peu de refactoring et voila finalement notre code:
 
 `lib/domain.js`
@@ -675,6 +721,7 @@ Et tous nos tests passent! un peu de refactoring et voila finalement notre code:
   Project.prototype = {
     name : function () { return this._name; },
     uuid : function () { return this._uuid; },
+    events: function () { return this._events; }
     apply: function (event) {
       switch(event.event_type()) {
         case "project_created" :
@@ -690,15 +737,15 @@ Et tous nos tests passent! un peu de refactoring et voila finalement notre code:
         this._events = [];
       }
       this._events[this._events.length] = event;
-    },
-    events: function () { return this._events; }
+    }
   };
 ```
 
-Restons sur un succès, et arrêtons nous là aujourd'hui.
+Restons sur un succès, et arrêtons nous là pour aujourd'hui.
 
 Dans notre prochain article, nous généraliserons la gestion de l'historique afin de pouvoir la réutiliser
-dans nos autres entités. Nous nous inspererons du design des `AggregateRoot` tel que généralement décrit dans
-[Super Simple CQRS Example - github](http://github.com/gregoryyoung/m-r).
+dans nos autres entités. Nous nous inspirerons du design des `AggregateRoot` tel que généralement décrit dans 
+les articles autours `cqrs` et dans [Super Simple CQRS Example - github](http://github.com/gregoryyoung/m-r).
 Pour plus d'information, je vous invite à consulter les liens [ici](http://technbolts.tumblr.com/post/11317032794).
-Et nous mettrons en place la reconstruction d'un objet par son historique.
+Et nous mettrons en place la reconstruction du projet par son historique.
+

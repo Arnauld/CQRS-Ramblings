@@ -126,3 +126,5 @@ C'est parti!! voici en vrac quelques idées de stories pour notre application.
   pas les modifier si bien que je peux toujours consulter les archives.
 
 
+Dans notre prochain article, nous mettrons en place notre environement de développement que nous nous
+empresserons de solliciter!

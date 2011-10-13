@@ -14,12 +14,27 @@ exports["create_project generate a valid uuid"] = function (test) {
     test.done();
 };
 
-exports["create_project must generate an event of type 'project_created' in history"] = function (test) {
+exports["a new project must have an `events` method to retrieve its history"] = function (test) {
     var project = domain.create_project("mccallum");
 
     var events = project.events();
     test.ok(events instanceof Array);
-    test.equal(events.length, 1);
-    test.equal(events[0].event_type(), "project_created");
     test.done();
+};
+exports["a new project must have a single `event` in its history"] = function (test) {
+	var project = domain.create_project("mccallum");
+
+	var events = project.events();
+	test.ok(events instanceof Array);
+	test.equal(events.length, 1);
+	test.done();
+};
+exports["a new project must have a single `event` in its history of type 'project_created'"] = function (test) {
+	var project = domain.create_project("mccallum");
+
+	var events = project.events();
+	test.ok(events instanceof Array);
+	test.equal(events.length, 1);
+	test.equal(events[0].event_type(), "project_created");
+	test.done();
 };

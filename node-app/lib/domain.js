@@ -18,6 +18,7 @@ var Project = function(project_id, project_name) {
 Project.prototype = {
 	name : function () { return this._name; },
 	uuid : function () { return this._uuid; },
+	events: function () { return this._events; },
 	apply: function (event) {
 		switch(event.event_type()) {
 			case "project_created" :
@@ -33,8 +34,7 @@ Project.prototype = {
 			this._events = [];
 		}
 		this._events[this._events.length] = event;
-	},
-	events: function () { return this._events; }
+	}
 };
 
 exports.create_project = function(project_name) {
