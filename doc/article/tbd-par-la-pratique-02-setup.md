@@ -747,5 +747,5 @@ Dans notre prochain article, nous généraliserons la gestion de l'historique af
 dans nos autres entités. Nous nous inspirerons du design des `AggregateRoot` tel que généralement décrit dans 
 les articles autours `cqrs` et dans [Super Simple CQRS Example - github](http://github.com/gregoryyoung/m-r).
 Pour plus d'information, je vous invite à consulter les liens [ici](http://technbolts.tumblr.com/post/11317032794).
-Et nous mettrons en place la reconstruction du projet par son historique.
+Enfin nous mettrons en place la reconstruction du projet par son historique.
 
