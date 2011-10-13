@@ -12,9 +12,14 @@ Commençons par glaner à gauche et à droite les modules dont nous aurons besoi
 
 ### Installer **nodejs**
 
+Voir [NodeJS](http://nodejs.org/) et [Installation](https://github.com/joyent/node/wiki/Installation).
+Pour ma part, j'ai suivi le lien [precompiled package for MacOS](https://sites.google.com/site/nodejsmacosx/).
+
 Assurons-nous que le simple "Hello world" marche:
 
 ```shell
+    $ node -v
+    v0.4.11
     $ echo "console.log('Hello World');" > hello.js
     $ node hello.js
     Hello World
@@ -22,11 +27,10 @@ Assurons-nous que le simple "Hello world" marche:
 ```
 
 ### Installer **Webworker** (for actor like)
-  
+
 [node-webworker](https://github.com/pgriess/node-webworker)
 
 > A WebWorkers implementation for NodeJS
-
 
 ```shell
     $ npm install webworker
@@ -48,6 +52,8 @@ Assurons-nous que le simple "Hello world" marche:
 ```
 
 ### Installer **nodeunit** (for TDD)
+
+[nodeunit](https://github.com/caolan/nodeunit)
 
 ```shell
     $ npm install nodeunit
@@ -92,6 +98,7 @@ Installer toutes ces dépendances une à une devient rapidement fastidieux, surt
 que le projet est récupérer depuis les sources. Heureusement, il existe un moyen de centraliser et conserver ces
 dépendances en créant un fichier `package.json`. Ce fichier est très similaire au fichier `pom.xml` de Maven.
 Il décrit de manière succinte l'appplication ainsi que ses dépendances.
+Voir [Introduction To npm](http://howtonode.org/introduction-to-npm) pour plus d'information.
 
 Par example:
 
@@ -150,6 +157,7 @@ Le projet prendra la forme suivante:
       +-- ...
 
 C'est à dire que
+
 * dans `lib/` sera contenu le code de notre application
 * dans `node_modules` les modules requis et installés pour NodeJS
 * dans `samples/` des snippets et autres petits tests sans importance
@@ -241,6 +249,11 @@ start watchr:
 
     watchr watchr-conf.rb
 
+Pour plus de détails, je vous invite à consulter le livre [Continuous Testing][continuous-testing] qui -
+même s'il traite essentiellement de Ruby, Rails et Javascript - donnent de bonne idées pour l'étendre à 
+d'autres technologies.
+
+[continuous-testing]:http://pragprog.com/book/rcctr/continuous-testing
 
 # Un démarrage en douceur
 
@@ -251,48 +264,48 @@ Commençons par le test fonctionnel de création d'un projet:
 `specs/project_specs.js`
 
 ```js
-var vows = require('vows'),
-    assert = require('assert');
+  var vows = require('vows'),
+      assert = require('assert');
 
-var domain = require('../lib/domain')
+  var domain = require('../lib/domain')
 
-vows.describe('Project').addBatch({
-    'A new project created with a given name': {
-        topic: function () { 
-            return domain.create_project("mccallum")
-        },
+  vows.describe('Project').addBatch({
+      'A new project created with a given name': {
+          topic: function () { 
+              return domain.create_project("mccallum")
+          },
 
-        'should return an instance of Project' : function(project) {
-            assert.instanceOf (project, domain.Project);
-        },
+          'should return an instance of Project' : function(project) {
+              assert.instanceOf (project, domain.Project);
+          },
 
-        'should have the specified name': function (project) {
-            assert.equal (project.name(), 'mccallum');
-        },
-    }
-}).export(module); // Export the Suite
+          'should have the specified name': function (project) {
+              assert.equal (project.name(), 'mccallum');
+          },
+      }
+  }).export(module); // Export the Suite
 ```
 
 Après la sauvegarde, on obtient la sortie suivante sur la console:
 
 ```
-Checking specs/project_specs.js
+  Checking specs/project_specs.js
 
-specs/project_specs.js
-/*jslint node: true, es5: true */
-  1 4,39: Expected ';' and instead saw 'vows'.
-    var domain = require('../lib/domain')
-  2 9,53: Expected ';' and instead saw '}'.
-    return domain.create_project("mccallum")
-Start behavior tests
+  specs/project_specs.js
+  /*jslint node: true, es5: true */
+    1 4,39: Expected ';' and instead saw 'vows'.
+      var domain = require('../lib/domain')
+    2 9,53: Expected ';' and instead saw '}'.
+      return domain.create_project("mccallum")
+  Start behavior tests
 
-node.js:134
-        throw e; // process.nextTick error, or 'error' event on first tick
-        ^
-Error: Cannot find module '../lib/domain'
-    at Function._resolveFilename (module.js:317:11)
-    at Function._load (module.js:262:25)
-    at require (module.js:346:19)
+  node.js:134
+          throw e; // process.nextTick error, or 'error' event on first tick
+          ^
+  Error: Cannot find module '../lib/domain'
+      at Function._resolveFilename (module.js:317:11)
+      at Function._load (module.js:262:25)
+      at require (module.js:346:19)
 
 ```
 
@@ -304,48 +317,48 @@ Après quelques tatonements, on obtient le fichier suivant:
 `lib/domain.js`
 
 ```js
-/**
- *  Project
- */
-var Project = function(project_name) {
-  this._name = project_name;
-};
+  /**
+   *  Project
+   */
+  var Project = function(project_name) {
+    this._name = project_name;
+  };
 
-exports.create_project = function(project_name) {
-  return new Project(project_name);
-};
+  exports.create_project = function(project_name) {
+    return new Project(project_name);
+  };
 
-exports.Project = Project
+  exports.Project = Project
 ```
 
 Après sauvegarde:
 
 ```
-Checking lib/domain.js
+  Checking lib/domain.js
 
-lib/domain.js
-/*jslint node: true, es5: true */
-  1 12,26: Expected ';' and instead saw '(end)'.
-    exports.Project = Project
+  lib/domain.js
+  /*jslint node: true, es5: true */
+    1 12,26: Expected ';' and instead saw '(end)'.
+      exports.Project = Project
 
-Start tests
+  Start tests
 
-Start behavior tests
+  Start behavior tests
 
-♢ Project
+  ♢ Project
 
-  A new project created with a given name
-    ✓ should return an instance of Project
-    ✗ should have the specified name
-    TypeError: Object [object Object] has no method 'name'
-    at Object.<anonymous> (/Users/arnauld/Projects/cqrs-ramblings/node-app/specs/project_specs2.js:17:35)
-    at runTest (/Users/arnauld/Projects/cqrs-ramblings/node-app/node_modules/vows/lib/vows.js:93:26)
-    at EventEmitter.<anonymous> (/Users/arnauld/Projects/cqrs-ramblings/node-app/node_modules/vows/lib/vows.js:71:9)
-    at EventEmitter.emit (events.js:81:20)
-    at Array.0 (/Users/arnauld/Projects/cqrs-ramblings/node-app/node_modules/vows/lib/vows/suite.js:150:58)
-    at EventEmitter._tickCallback (node.js:126:26)
- 
-✗ Errored » 1 honored ∙ 1 errored (0.008s)
+    A new project created with a given name
+      ✓ should return an instance of Project
+      ✗ should have the specified name
+      TypeError: Object [object Object] has no method 'name'
+      at Object.<anonymous> (/Users/arnauld/Projects/cqrs-ramblings/node-app/specs/project_specs.js:17:35)
+      at runTest (/Users/arnauld/Projects/cqrs-ramblings/node-app/node_modules/vows/lib/vows.js:93:26)
+      at EventEmitter.<anonymous> (/Users/arnauld/Projects/cqrs-ramblings/node-app/node_modules/vows/lib/vows.js:71:9)
+      at EventEmitter.emit (events.js:81:20)
+      at Array.0 (/Users/arnauld/Projects/cqrs-ramblings/node-app/node_modules/vows/lib/vows/suite.js:150:58)
+      at EventEmitter._tickCallback (node.js:126:26)
+   
+  ✗ Errored » 1 honored ∙ 1 errored (0.008s)
 ```
 
 Le projet créé est bien une instance de `Projet` en revanche il ne dispose pas de la méthode `name` qui devrait
@@ -355,35 +368,294 @@ permettre de renvoyer son nom. Fixons encore une fois le `;` qui manque, et rajo
 `lib/domain.js`
 
 ```js
-Project.prototype = {
-  name : function () { return this._name; }
-};
+  Project.prototype = {
+    name : function () { return this._name; }
+  };
 ```
 
 Nous obtenons finalement la sortie suivante:
 
 ```
-Checking lib/domain.js
+  Checking lib/domain.js
 
-lib/domain.js
-/*jslint node: true, es5: true */
-No errors found.
+  lib/domain.js
+  /*jslint node: true, es5: true */
+  No errors found.
+
+  Start tests
+
+  Start behavior tests
+
+  ♢ Project
+
+    A new project created with a given name
+      ✓ should return an instance of Project
+      ✓ should have the specified name
+   
+  ✓ OK » 2 honored (0.006s)
+```
+
+Hourra!!
+
+Je passe rapidement sur la génération automatique d'un `uuid` pour notre projet, et notre code ressemble désormais à:
+
+`lib/domain.js`
+
+```js
+  var uuid = require('node-uuid');
+
+  /**
+   *  Project
+   */
+  var Project = function(uuid, project_name) {
+    this._name = project_name;
+    this._uuid = uuid;
+  };
+
+  Project.prototype = {
+    name : function () { return this._name; },
+    uuid : function () { return this._uuid; }
+  };
+
+  exports.create_project = function(project_name) {
+    return new Project(uuid(), project_name);
+  };
+
+  exports.Project = Project;
+```
+
+Des tests unitaires ont été ajouté avant chaque ajout de méthode sur notre `classe` `Project` et ressemble
+désormais à:
+
+`test/project_test.js`
+
+```
+  var domain = require("../lib/domain");
+
+  var UUID_PATTERN = /[0-9a-f]{8}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{8}/;
+
+  exports["create_project return the specified name"] = function (test) {
+    var project = domain.create_project("mccallum");
+    test.equal(project.name(), "mccallum");
+    test.done();
+  };
+
+  exports["create_project generate a valid uuid"] = function (test) {
+    var project = domain.create_project("mccallum");
+    test.equal(UUID_PATTERN.test(project.uuid()), true);
+    test.done();
+  };
+```
+
+Notre fichiers de tests fonctionnels c'est aussi enrichi de quelques assertions supplémentaires notament
+sur l'unicité de notre `uuid` et sa représentation:
+
+`specs/project_specs.js`
+
+```js
+  var vows = require('vows'),
+      assert = require('assert');
+
+  var domain = require('../lib/domain');
+
+  var UUID_PATTERN = /[0-9a-f]{8}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{8}/;
+
+  vows.describe('Project').addBatch({
+      'A new project created with a given name': {
+          topic: function () {
+              return domain.create_project("mccallum");
+          },
+
+          'should return an instance of Project' : function(project) {
+              assert.instanceOf (project, domain.Project);
+          },
+
+          'should have the specified name': function (project) {
+              assert.equal (project.name(), 'mccallum');
+          },
+
+          'and a generated uuid': function (project) {
+              assert.equal(UUID_PATTERN.test(project.uuid()), true);
+          }
+      },
+      'New projects': {
+          topic: function () { 
+              return [ domain.create_project("mccallum"), domain.create_project("mccallum")];
+          },
+
+          'should have differents uuid': function (result) {
+              assert.notEqual (result[0].uuid(), result[1].uuid());
+          }
+      }
+  }).export(module); // Export the Suite
+```
+
+# Et l'Event Sourcing dans tout ça ??
+
+Tout ça c'est bien mais ce n'est pas très conforme avec notre idée de l'[Event Sourcing][event-sourcing].
+En effet, la création du projet consiste bien en une transition d'état de *rien* vers *un nouveau projet*.
+Rajoutons donc un évènement `ProjectCreated`, cet évènement sera porteur du nom du projet. Mais que deviens
+notre `uuid` ? sa valeur est portée par le projet, et nous souhaitons qu'un projet puisse être reconstruit
+uniquement à partir de ses évènements. Nous déplaçons donc la génération du `uuid` et considérons que celui-ci
+est un attribut de notre évènement.
+
+Commençons par écrire les tests unitaires qui décrivent ce que nous souhaitons:
+
+`test/project_test.js`
+
+```js
+  ...
+  exports["create_project must generate an event of type 'project_created' in history"] = function (test) {
+    var project = domain.create_project("mccallum");
+
+    var events = project.events();
+    test.ok(events instanceof Array);
+    test.equal(events.length, 1);
+    test.equal(events[0].event_type(), "project_created");
+    test.done();
+  };
+```
+
+Et la console nous affiche:
+
+```
+  Checking test/project_test.js
+  --------------------------
+
+  test/project_test.js
+  /*jslint node: true, es5: true */
+  No errors found.
+
+  Start tests
+  --------------------------
+
+  project_test
+  ✔ create_project return the specified name
+  ✔ create_project generate a valid uuid
+  ✖ create_project must generate an event of type 'project_created' in history
+
+  TypeError: Object #<Object> has no method 'events'
+      at /Users/arnauld/Projects/cqrs-ramblings/node-app/test/project_test.js:20:26
+      ...
+```
+
+Modifions notre méthode de création de projet en passant non plus le nom et l'identifiant du projet mais l'évènement
+souhaité. Dans la foulée nous rajoutons la méthode `apply` qui va appliquer cet évènement à notre projet. De la même
+manière que si l'on rejouait l'historique du projet.
+Notre code ressemble désormais à (je passe toutes les petites galères de syntaxes javascript jslint étant là pour
+me rappeller à l'ordre à chaque sauvegarde):
+
+`lib/domain.js`
+
+```
+  var uuid = require('node-uuid');
+
+  /**
+   *  Project
+   */
+
+  var ProjectCreated = function(project_id, project_name) {
+    // wrapping functions to make values *immutables*
+    this.event_type   = function() { return "project_created"; };
+    this.project_name = function() { return project_name; };
+    this.project_id   = function() { return project_id;   };
+  };
+
+  var Project = function(project_id, project_name) {
+    this.apply(new ProjectCreated(project_id, project_name));
+  };
+
+  // public method
+  Project.prototype = {
+    name : function () { return this._name; },
+    uuid : function () { return this._uuid; },
+    apply: function (event) {
+      switch(event.event_type()) {
+        case "project_created" :
+          this._name = event.project_name();
+          this._uuid = event.project_id();
+          break;
+        default:
+          throw new Error("Unknown event type: " + event.event_type());
+      }
+    }
+  };
+
+  exports.create_project = function(project_name) {
+    return new Project(uuid(), project_name);
+  };
+
+  exports.Project = Project;
+```
+
+Après sauvegarde, on vérifie que les tests précédents continuent de fonctionner correctement:
+
+```
+...
 
 Start tests
+--------------------------
+
+project_test
+✔ create_project return the specified name
+✔ create_project generate a valid uuid
+✖ create_project must generate an event of type 'ProjectCreated' in history
+
+TypeError: Object #<Object> has no method 'events'
+    at /Users/arnauld/Projects/cqrs-ramblings/node-app/test/project_test.js:20:26
+    ...
+
+
+FAILURES: 1/3 assertions failed (8ms)
 
 Start behavior tests
+--------------------------
 
 ♢ Project
 
   A new project created with a given name
     ✓ should return an instance of Project
     ✓ should have the specified name
+    ✓ and a generated uuid
+  New projects
+    ✓ should have differents uuid
  
-✓ OK » 2 honored (0.006s)
+✓ OK » 4 honored (0.003s)
 ```
 
-Hourra!!
+Hourra!! même nos tests fonctionnels continuent de passer. Ajoutons désormais l'historique à notre projet.
+Et tous nos tests passent! un peu de refactoring et voila finalement notre code:
 
-Tout ça c'est bien mais ce n'est pas très conforme avec notre idée de l'[Event Sourcing][event-sourcing]
+`lib/domain.js`
 
+```js
+  ...
+  // public method
+  Project.prototype = {
+    name : function () { return this._name; },
+    uuid : function () { return this._uuid; },
+    apply: function (event) {
+      switch(event.event_type()) {
+        case "project_created" :
+          this._name = event.project_name();
+          this._uuid = event.project_id();
+          break;
+        default:
+          throw new Error("Unknown event type: " + event.event_type());
+      }
 
+      // still there means the event was correctly handled, thus keep it!
+      if(typeof this._events === 'undefined') {
+        this._events = [];
+      }
+      this._events[this._events.length] = event;
+    },
+    events: function () { return this._events; }
+  };
+```
+
+Restons sur un succès, et arrêtons nous là aujourd'hui.
+Dans notre prochain article, nous généraliserons la gestion de l'historique afin de pouvoir la réutiliser
+dans nos autres entités. Nous nous inspererons du design des `AggregateRoot` tel que généralement décrit dans
+[Super Simple CQRS Example - github](http://github.com/gregoryyoung/m-r).
+Pour plus d'information, je vous invite à consulter les liens [ici](http://technbolts.tumblr.com/post/11317032794).
