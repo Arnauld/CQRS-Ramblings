@@ -13,8 +13,8 @@ Il est alors nécessaire de modifier dans les fichiers `specs/project_specs.js` 
 Afin de completer un peu notre projet ajoutons une méthode `rename` afin de pouvoir modifier le nom
 de notre projet. Successivement nous:
 
-1. ajoutons le test suivant:
-  `test/project_test.js`
+1. ajoutons le test suivant (`test/project_test.js`)
+  
   ```js
     exports["renaming a project must change its name according to new one"] = function (test) {
         var project = prj.create("mccallum");
@@ -24,8 +24,8 @@ de notre projet. Successivement nous:
     };
   ```
 2. vérifions que notre test échoue à cause de l'absence de la méthode
-3. ajoutons ensuite la méthode `rename` sur notre project
-  `lib/project.js`
+3. ajoutons ensuite la méthode `rename` sur notre project (`lib/project.js`)
+  
   ```js
     // public method
     Project.prototype = {
@@ -35,8 +35,8 @@ de notre projet. Successivement nous:
         }
     };
   ```
-4. ajoutons le test indiquant que le changement de nom doit entrainer la création d'un nouvel évènement
-  `test/project_test.js`
+4. ajoutons le test indiquant que le changement de nom doit entrainer la création d'un nouvel évènement (`test/project_test.js`)
+  
   ```js
     exports["renaming a project must add an `event` in its history of type 'project_renamed'"] = function (test) {
         var project = prj.create("mccallum");
@@ -52,8 +52,8 @@ de notre projet. Successivement nous:
   ```
 5. vérifions que notre test échoue
 6. et modifions finalement la méthode `rename` pour générer un nouvel évènement et sa gestion
-  dans la méthode apply
-  `lib/project.js`
+  dans la méthode apply (`lib/project.js`)
+  
   ```js
     var to_f = function(value) { 
         return function () { 
@@ -105,7 +105,9 @@ d'un projet à partir de ses évènements, rappellez-vous l'Event sourcing!
 
 Exportons les classes de nos deux évènements afin qu'elles soient disponibles depuis les autres
 modules.
+
 `lib/project.js`
+
 ```js
     exports.ProjectCreated = ProjectCreated;
     exports.ProjectRenamed = ProjectRenamed;
@@ -147,9 +149,9 @@ Nous obtenons alors:
         },
         ...
     };
-
+    
     ...
-
+    
     exports.load_from_history = function(events) {
         var project = new Project();
         project.load_from_history(events);
@@ -160,6 +162,7 @@ Nous obtenons alors:
 Le code complet de `lib/project.js` est à ce stade:
 
 `lib/project.js`
+
 ```js
     var uuid = require('node-uuid');
 
