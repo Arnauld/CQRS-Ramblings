@@ -31,26 +31,29 @@ exports.ProjectRenamed = ProjectRenamed;
  *  Project
  */
 var Project = function(project_id, project_name) {
-	this.apply(new ProjectCreated(project_id, project_name));
+	this.apply_event(new ProjectCreated(project_id, project_name));
 };
 
 // public method
 Project.prototype = {
-	name : function () { return this._name; },
-	uuid : function () { return this._uuid; },
-	events: function () { return this._events; },
-	apply: function (event) {
-		switch(event.event_type()) {
-			case "project_created" :
-				this._name = event.project_name();
-				this._uuid = event.project_id();
-				break;
-			case "project_renamed" :
-				this._name = event.new_project_name();
-				break;
-			default:
-				throw new Error("Unknown event type: " + event.event_type());
+	event_handlers : {
+		on_project_created: function(event) {
+			this._name = event.project_name();
+			this._uuid = event.project_id();
+		},
+		on_project_renamed: function(event) {
+			this._name = event.new_project_name();
 		}
+	},
+	name  : function () { return this._name; },
+	uuid  : function () { return this._uuid; },
+	events: function () { return this._events; },
+	apply_event : function (event) {
+		var handler = this.event_handlers["on_"+event.event_type()];
+		if(typeof handler === 'undefined') {
+			throw new Error("Unknown event type: <" + event.event_type() + ">");
+		}
+		handler.call(this, event);
 
 		// still there means, the event was correctly handled, thus keep it!
 		if(typeof this._events === 'undefined') {
@@ -61,11 +64,11 @@ Project.prototype = {
 	load_from_history: function(events) {
 		var $this = this;
 		events.forEach(function(event) {
-			$this.apply(event);
+			$this.apply_event(event);
 		});
 	},
 	rename: function(new_name) {
-		this.apply(new ProjectRenamed(this._uuid, new_name));	
+		this.apply_event(new ProjectRenamed(this._uuid, new_name));	
 	}
 };
 
