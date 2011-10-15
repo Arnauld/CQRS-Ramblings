@@ -290,7 +290,7 @@ Modifions alors notre `Story` afin d'ajouter les vérifications voulues:
         if(typeof data.name === 'undefined') {
             throw new Error("Missing story's <name>!");
         }
-
+    
         var story = new Story();
         story.apply_event(new StoryCreated(data.project_id, 
             uuid(), data.name, data.description, data.complexity, data.business_value));
@@ -302,6 +302,11 @@ et la, hourra nos tests passent... enfin les nouveaux... parce que les anciens s
 tous rouges: il manque le `project_id` dans la plupart. Une fois ajouté dans tous ces tests,
 ils passent tous, eh eh!
 
+Compte-tenu de tout ce que nous avons pu voir jusqu'ici, nous pouvons passer rapidement sur
+l'ajout des méthodes `rename`, `changeDescription`, `changeComplexity` et `changeBusinessValue`.
+Pour chacune de ces méthodes, nous definissons les évènements respectifs suivant: `StoryRenamed`,
+`StoryDescriptionChanged`, `StoryComplexityChanged` et `StoryBusinessValueChanged`.
+De la même manière que pour la classe `Projet`, nous ajoutons la méthode `load_from_history`.
 
 
 
