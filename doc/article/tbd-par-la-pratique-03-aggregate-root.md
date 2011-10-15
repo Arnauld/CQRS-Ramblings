@@ -609,9 +609,9 @@ Mis en place, notre classe `Project` devient:
     ...
 ```
 
-
-
-
+Une séance plutôt technique de préparation, avant une grande ligne droite de fonctionnel.
+Après s'être fait un peu la main sur notre entité de projet, nous interesserons la prochaine
+fois au `backlog` et aux `story`.
 
 
 

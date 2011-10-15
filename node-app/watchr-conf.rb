@@ -1,4 +1,5 @@
 watch('^(lib/(.*)\.js)') do |m|
+  separator()
   jslint_check("#{m[1]}")
   test()
   specs()
@@ -6,15 +7,21 @@ watch('^(lib/(.*)\.js)') do |m|
 end
 
 watch('^(test/(.*)\.js)') do |m|
+  separator()
   jslint_check("#{m[1]}")
   test()
   puts Time.now.strftime("%Y-%m-%d %H:%M:%S")
 end
 
 watch('^(specs/(.*)\.js)') do |m|
+  separator()
   jslint_check("#{m[1]}")
   specs()
   puts Time.now.strftime("%Y-%m-%d %H:%M:%S")
+end
+
+def separator
+  puts "------------------------------------------------------------------"
 end
 
 def jslint_check(files_to_check)

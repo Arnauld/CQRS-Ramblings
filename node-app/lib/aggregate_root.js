@@ -4,7 +4,7 @@
 function AggregateRoot() {}
 exports.AggregateRoot = AggregateRoot;
 
-// public method
+// public methods
 AggregateRoot.prototype = {
 	event_handlers : {},
 	uuid  : function () { return this._uuid; },
