@@ -51,6 +51,14 @@ var StoryBusinessValueChanged = function(story_id, new_business_value) {
 };
 exports.StoryBusinessValueChanged = StoryBusinessValueChanged;
 
+var StoryCommentAdded = function(story_id, new_comment) {
+    this.event_type = to_f("story_comment_added");
+    this.content    = to_f(new_comment);
+    this.story_id   = to_f(story_id);
+};
+exports.StoryCommentAdded = StoryCommentAdded;
+
+
 /**
  *  Story
  */
@@ -75,7 +83,8 @@ var methods = {
         },
         on_story_business_value_changed: function(event) {
             this._business_value = event.new_business_value();
-        }
+        },
+        on_story_comment_added: function (event) {}
     },
     project_id : function () {
         return this._project_id;    
@@ -103,6 +112,9 @@ var methods = {
     },
     change_business_value: function(new_business_value) {
         this.apply_event(new StoryBusinessValueChanged(this._uuid, new_business_value));    
+    },
+    add_comment: function(new_comment) {
+        this.apply_event(new StoryCommentAdded(this._uuid, new_comment));
     }
 };
 

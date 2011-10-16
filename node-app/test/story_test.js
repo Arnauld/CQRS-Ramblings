@@ -182,3 +182,19 @@ exports["changing the business_value of a story must add an `event` in its histo
 	test.equal(events[1].new_business_value(),5);
 	test.done();
 };
+
+exports["adding a comment to a story must add an 'event' in its history of type 'story_comment_added'"] = function(test) {
+	var st = story.create({name:"mccallum", project_id:"cafebabe-3550"});
+	st.add_comment("Make the implicit explicit");
+
+	var uuid = st.uuid();
+
+	var events = st.events();
+	test.ok(events instanceof Array);
+	test.equal(events.length, 2);
+	test.equal(events[0].event_type(), "story_created");
+	test.equal(events[1].event_type(), "story_comment_added");
+	test.equal(events[1].story_id(),   uuid);
+	test.equal(events[1].content(),    "Make the implicit explicit");
+	test.done();
+};

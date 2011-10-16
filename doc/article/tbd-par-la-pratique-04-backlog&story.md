@@ -302,18 +302,126 @@ et la, hourra nos tests passent... enfin les nouveaux... parce que les anciens s
 tous rouges: il manque le `project_id` dans la plupart. Une fois ajouté dans tous ces tests,
 ils passent tous, eh eh!
 
-Compte-tenu de tout ce que nous avons pu voir jusqu'ici, nous pouvons passer rapidement sur
+Compte-tenu de tout ce que nous avons pu voir jusqu'ici, nous passons rapidement sur
 l'ajout des méthodes `rename`, `changeDescription`, `changeComplexity` et `changeBusinessValue`.
 Pour chacune de ces méthodes, nous definissons les évènements respectifs suivant: `StoryRenamed`,
 `StoryDescriptionChanged`, `StoryComplexityChanged` et `StoryBusinessValueChanged`.
 De la même manière que pour la classe `Projet`, nous ajoutons la méthode `load_from_history`.
 
+Faisons une petite pause et revenons quelques instants sur notre modélisation.
+Voici les étapes (d'un point de vue technique) pour la création d'un `Project` et l'ajout de `Story`
+à celui-ci:
 
+```js
+    var my_app = project.create("MyApplication");
+    ...
+    var story01 = story.create({ 
+        project_id: my_app.uuid(), 
+        name: "As a team member, i want to navigate through all the stories of my project."
+    });
+```
 
+[TODO] méthode story.create est dissociée du projet, et a été ramenée au minimum d'informations requises
+c'est à dire le `project.uuid` ... un `project` peux compter plusieurs milliers de `story` dans son `backlog`
+c'est pourquoi contrairement à une approche *classique* nous ne souhaitons pas faire porter directement
+par le projet l'intégralité des `story` qui y sont rattaché, en d'autre terme nous évitons d'introduire
+une relation navigable et bidirectionnelle entre ces deux entités.
 
+#### Et les commentaires?
 
+> * En tant que **membre de l'équipe**, je peux completer une entrée du backlog en modifiant ses informations
+> ou en ajoutant un commentaire, si bien que cette entrée disposera de plus amples informations à mesure des
+> reflexions qu'elle peux suciter.
 
+Définissions dans un premier temps notre test fonctionnel correspondant à la création d'un commentaire.
 
+La difficulté qui apparait désormais est de vérifier que notre commentaire a bien été ajouté. En effet, si l'on prévoit
+que le nombre de commentaire peut être conséquent, il est peu probable que nous les conservions tous en mémoire. Ceci nous
+amène au point suivant: la persistence de nos données. Le soucis que nous voyons avec nos commentaires est en fait déjà
+présents à travers l'historique de nos entités, devons-nous conserver l'intégralité des évènements en mémoire? La réponse
+est bien évidemment non! Nous ne devrions conserver en mémoire sur nos entités uniquement les données qui ont une importance 
+métier pour assurer son intégrité à tout instant. Dans ce cas, pourquoi conserver sur une `Story`, 
+sa `description`, sa `business value` et sa `complexity` ? Et bien tout simplement parce dans un premier temps, nous
+ne disposons pas d'autre moyen de vérifier ces valeurs, et que d'autre par il ne devrait pas s'agir d'une consommation
+mémoire trop importante, en effet il est peu probable que le nom d'un `Story` excède les centaines de caractères, et que sa
+description (même en html) ne soient beaucoup plus importante qu'une page de texte. Il est donc raisonable dans un
+premier de temps de conserver ces valeurs directement sur l'entité.
 
+D'autre part, l'intégralité de l'historique de nos entités est lui aussi conservé en mémoire, il va donc falloir 
+remédier à cela aussi. Mais chaque chose en son temps.
+Plutôt que de conserver les commentaires en mémoires, nous travaillerons sur l'historique directement, et vérifierons
+que le commentaire est bien présent parmis les évènements de notre entité. Ainsi, lorsque la persistence de l'historique
+sera résolu, nos commentaires le seront aussi.
 
+`specs/story_specs.js`
+
+```js
+    'Story' : {
+        topic: function () {
+            return story.create({
+                project_id: "cafebabe-3550",
+                name: "As a developer, I want to known NodeJS so that i increase my knowledge", 
+            });
+        },
+        'can be improved by adding comment on it' : function(story) {
+            var CONTENT = "NodeJS looks promising, not only for application but also as a tool to test and learn javascipt";
+            story.add_comment(CONTENT);
+            var last_event = story.last_event();
+            assert.equal (last_event.event_type(), "story_comment_added");
+            assert.equal (last_event.content(), CONTENT);
+        }
+    }
+```
+
+On pourra noter l'ajout de la méthode `last_event` sur notre classe `AggregateRoot`:
+
+`lib/aggregate_root.js`
+
+```js
+    // public methods
+    AggregateRoot.prototype = {
+        ...
+        events: function () { return this._events; },
+        last_event: function () {
+            if(typeof this._events === 'undefined') {
+                return; // returns 'undefined'
+            }
+            else if(this._events.length === 0) {
+                return; // returns 'undefined'
+            }
+            return this._events[this._events.length-1];
+        },
+        apply_event : function (event) {
+        ...
+```
+
+Quelques tests unitaires au préalable, et notre `Story` est modifiée comme suit:
+
+`lib/story.js`
+
+```js
+    var StoryCommentAdded = function(story_id, new_comment) {
+        this.event_type = to_f("story_comment_added");
+        this.content    = to_f(new_comment);
+    };
+    exports.StoryCommentAdded = StoryCommentAdded;
+    
+    /**
+     *  Story
+     */
+    var methods = {
+        event_handlers : {
+            ...
+            on_story_comment_added: function (event) {}
+        },   
+        
+        ...
+        
+        add_comment: function(new_comment) {
+            this.apply_event(new StoryCommentAdded(this._uuid, new_comment));
+        }
+    };
+
+    ...
+```
 

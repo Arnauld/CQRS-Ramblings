@@ -25,11 +25,14 @@ def separator
 end
 
 def jslint_check(files_to_check)
-  #system('clear')
-  puts ""
-  puts "Checking #{files_to_check}"
-  puts "--------------------------"
-  system("node_modules/.bin/jslint #{files_to_check}")
+  # If you surround your command with backticks, then you don't need to (explicitly) call system() at all. 
+  # The backticks execute the command and return the output as a string.
+  output = `node_modules/.bin/jslint #{files_to_check}`
+  if(output.include? 'No errors found.')
+    puts "✓ [#{files_to_check}]"
+  else
+    puts "✗ [#{files_to_check}] \n #{output}"
+  end
 end
 
 def test()

@@ -9,6 +9,15 @@ AggregateRoot.prototype = {
 	event_handlers : {},
 	uuid  : function () { return this._uuid; },
 	events: function () { return this._events; },
+	last_event: function () {
+		if(typeof this._events === 'undefined') {
+			return; // returns 'undefined'
+		}
+		else if(this._events.length === 0) {
+			return; // returns 'undefined'
+		}
+		return this._events[this._events.length-1];
+	},
 	apply_event : function (event) {
 		var handler = this.event_handlers["on_"+event.event_type()];
 		if(typeof handler === 'undefined') {

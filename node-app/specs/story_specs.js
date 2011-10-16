@@ -40,44 +40,39 @@ vows.describe('Story').addBatch({
         'should have a generated uuid': function (story) {
             assert.equal(UUID_PATTERN.test(story.uuid()), true);
         }
-    }/*,
-    'A new story created with its name only' : {
-        topic: function () { 
-            return story.create({name:"mccallum"});
-        },
-
-        'should return an instance of Story' : function(story) {
-            assert.instanceOf (story, story.Story);
-        },
-
-        'should have the specified name': function (story) {
-            assert.equal (story.name(), 'mccallum');
-        },
-
-        'should have an empty description': function (story) {
-            assert.equal (story.description(), '');
-        },
-
-        'should have a complexity undefined': function (story) {
-            assert.equal (typeof story.complexity() === 'undefined');
-        },
-
-        'should have a business value undefined': function (story) {
-            assert.equal (typeof story.business_value() === 'undefined');
-        },
-
-
-        'should have a generated uuid': function (story) {
-            assert.equal(UUID_PATTERN.test(story.uuid()), true);
-        }
     },
     'New stories': {
         topic: function () { 
-            return [ story.create({name:"mccallum"}), story.create({name:"mccallum"})];
+            var story1 = story.create({
+                project_id: "cafebabe-3550",
+                name:"mccallum"});
+            var story2 = story.create({
+                project_id: "cafebabe-3550",
+                name:"mccallum"});
+            return [ story1, story2 ];
         },
 
         'should have differents uuid': function (result) {
             assert.notEqual (result[0].uuid(), result[1].uuid());
         }
-    }*/
+    },
+    'Story' : {
+        topic: function () {
+            return story.create({
+                project_id: "cafebabe-3550",
+                name: "As a developer, I want to known NodeJS so that i increase my knowledge", 
+            });
+        },
+        'can be improved by adding comment on it' : function(story) {
+            var CONTENT = "NodeJS looks promising, not only for application but also as a tool to test and learn javascipt";
+            story.add_comment(CONTENT);
+            var last_event = story.last_event();
+            assert.equal (last_event.event_type(), "story_comment_added");
+            assert.equal (last_event.content(), CONTENT);
+        }
+    }
 }).export(module); // Export the Suite
+
+
+
+
