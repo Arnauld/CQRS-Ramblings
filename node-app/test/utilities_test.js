@@ -46,3 +46,20 @@ exports["mixin provides a simple way to add properties"] = function (test) {
 	test.equal(data.uuid, "cafebabe-0553-713705");
     test.done();
 };
+
+exports["trim string"] = function (test) {
+	test.equal(utilities.trim(""), "");
+	test.equal(utilities.trim(" hello"), "hello");
+	test.equal(utilities.trim("hello "), "hello");
+	test.equal(utilities.trim(" hello "), "hello");
+	test.equal(utilities.trim("   hel  loo   "), "hel  loo");
+    test.done();
+};
+
+exports["starts with"] = function (test) {
+	test.equal(utilities.starts_with("", "What"), false);
+	test.equal(utilities.starts_with(" What is this?", "What"), false);
+	test.equal(utilities.starts_with("What is this", "What"), true);
+	test.equal(utilities.starts_with("Whatever", "What"), true);
+    test.done();
+};

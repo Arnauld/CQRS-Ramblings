@@ -395,7 +395,7 @@ On pourra noter l'ajout de la méthode `last_event` sur notre classe `AggregateR
         ...
 ```
 
-Quelques tests unitaires au préalable, et notre `Story` est modifiée comme suit:
+Quelques tests unitaires notre `Story` est modifiée comme suit:
 
 `lib/story.js`
 
@@ -405,7 +405,7 @@ Quelques tests unitaires au préalable, et notre `Story` est modifiée comme sui
         this.content    = to_f(new_comment);
     };
     exports.StoryCommentAdded = StoryCommentAdded;
-    
+
     /**
      *  Story
      */
@@ -416,7 +416,7 @@ Quelques tests unitaires au préalable, et notre `Story` est modifiée comme sui
         },   
         
         ...
-        
+
         add_comment: function(new_comment) {
             this.apply_event(new StoryCommentAdded(this._uuid, new_comment));
         }
@@ -425,3 +425,25 @@ Quelques tests unitaires au préalable, et notre `Story` est modifiée comme sui
     ...
 ```
 
+**Les sources de notre application à ce stade peuvent téléchargées [ici](https://github.com/Arnauld/CQRS-Ramblings/zipball/savepoint-04.1-backlog&story).**
+
+#### Etats des lieux
+
+Dans l'état, notre application permet de 
+
+* créer un `Project` et modifier son nom
+* créer des `Story` rattachées à un projet, modifier leurs descriptions et rajouter des commentaires
+
+Il nous manque encore: 
+
+* la gestion des équipes, leurs membres et le rôle de chacun
+* la création d'un sprint, et des `Task` qui lui sont attachées
+
+Par conséquent, notre P.O. (`Product Owner`) peux dès à présent commencer à enregistrer et préparer les `Story` qui viendront
+plutard alimenter notre `Sprint`. Euh... en fait non, notre P.O. ne peux pas le faire et ce pour plusieurs raisons:
+
+1. Il ne dispose pas d'interface utilisateur pour le faire
+2. Aucune persistence n'est encore assurée
+
+Notre prochaine étape consistera donc remplir ces deux conditions afin que l'on puisse commencer le plutôt possible la
+saisie des `Story` de notre projet.

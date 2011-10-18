@@ -25,6 +25,9 @@ def check_syntax()
 	Dir.glob("specs/**/*.js") do |filename|  
  		jslint_check(filename)
 	end
+  Dir.glob("it/**/*.js") do |filename|  
+    jslint_check(filename)
+  end
   puts ""
 end
 
@@ -42,6 +45,13 @@ def specs()
   system("node_modules/.bin/vows --spec specs/*")
 end
 
+def it()
+  puts ""
+  puts "Start integration tests"
+  puts "--------------------------"
+  system("node_modules/.bin/nodeunit it")
+end
+
 command = ARGV[0] ? ARGV[0] : "all"
 case command
 	when "syntax"
@@ -50,6 +60,8 @@ case command
 		test()
 	when "specs"
 		specs()
+  when "it"
+    it()
 	when "all"
 		check_syntax()
 		test()

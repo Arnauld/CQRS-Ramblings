@@ -1,0 +1,7 @@
+{
+	"postgres_bin"      : "/Library/PostgreSQL/9.0/bin/",
+	"postgres_user"     : "integration",
+	"postgres_pass"     : "1tegration",
+	"dropable_dbname"   : "nscrum_dropable_itdb",
+	"persistent_dbname" : "nscrum_itdb"
+}

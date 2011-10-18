@@ -9,3 +9,15 @@ var mixin = function(dst, functions) {
 };
 
 exports.mixin = mixin;
+
+exports.trim = function(string) {
+	return string.replace(/^\s+/, '').replace(/\s+$/, '');
+};
+
+exports.starts_with = function(string, prefix) {
+	return string.lastIndexOf(prefix, 0) === 0;	
+};
+
+exports.contains = function(string, searched) {
+	return string.indexOf(searched) !== -1;	
+};
