@@ -644,11 +644,5 @@ de la table et création de l'index.
 Nous disposons finalement d'un outil de migration et d'un test d'intégration nous permettant de le valider
 à chaque ajout de nouvelles migrations ou d'édition de script.
 
-
-
-Revenons à notre projet et à la persistence de nos évènements. Créons pour cela la classe qui modélisera notre
-`EventStore`.
-
-### EventStore
-
-
+Dans notre prochain article, nous reviendrons au fonctionnel de notre projet et à la persistence de nos évènements. 
+Nous créerons pour cela la classe qui modélisera notre `EventStore`.
