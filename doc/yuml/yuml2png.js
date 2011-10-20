@@ -2,6 +2,18 @@ var fs   = require('fs'),
     exec = require('child_process').exec
     ;
 
+ var options = (function() {
+	 var value = {verbose:false};
+	 var i;
+	 for(i = 2; i < process.argv.length; i++) {
+	 	var opt = process.argv[i];
+	 	if(opt === "-v") {
+	 		value.verbose = true;
+	 	}
+	 }
+	 return value;
+})();
+
 function endsWith(string, pattern) {
 	var d = string.length - pattern.length;
 	// We use `indexOf` instead of `lastIndexOf` to avoid tying execution
@@ -20,13 +32,18 @@ var cleanup = function(content) {
 };
 
 var cleanup_encode = function(content) {
-	return encodeURIComponent(cleanup(content));
+	var encoded = encodeURIComponent(cleanup(content));
+	encoded = encoded.replace(/\%3B/g, ";");
+	return encoded;
 };
 
 var transform = function(srcdir, filename, outputdir) {
 	var file_content = fs.readFileSync(srcdir + '/' + filename, 'utf8');
-	var output = outputdir + "/" + filename.substr(0, filename.length - 4) + "png";
+	var output = outputdir + "/" + filename.substr(0, filename.length - 5) + "-yuml.png";
 	var command = "curl --globoff -o '"+ output + "'" + ' "http://yuml.me/diagram/scruffy/class/' + cleanup_encode(file_content) + '"';
+	if(options.verbose) {
+		console.log(command);	
+	}
 	exec(command,
 	      function (error, stdout, stderr) {
 	      	if(error) {

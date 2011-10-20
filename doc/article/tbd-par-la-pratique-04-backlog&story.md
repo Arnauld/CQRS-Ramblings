@@ -2,15 +2,15 @@
 
 
 Le `backlog` est directement lié au projet par une relation 1-1: le backlog appartient à un projet
-et un projet n'a qu'un backlog. D'un certain point de vue, le backlog existe fonctionnellement, mais
-créé une entité dédiée n'apporte, à ce stade, pas grand chose: il s'agit plus d'un concept que l'on
+et un projet ne possède qu'un backlog. D'un certain point de vue, le backlog existe fonctionnellement, mais
+créer une entité dédiée n'apporte, à ce stade, pas grand chose: il s'agit plus d'un concept que l'on
 qualifiera d'affichage qu'un besoin de persistence. Nous nous passerons donc de définir une entité
 dédiée au backlog.
 
-En revanche, une `story` joue un rôle centrale dans notre application. Les discussions de travail
-seront souvent centrées autour d'une `story` particulère, bien identifiée par son nom et sa
-description. Et même si une `story` appartient à un projet, nous considérerons plutôt qu'elle est liée
-à celui-ci, et qu'elle constitue une entité à part entière.
+En revanche, une `story` joue un rôle centrale (certain parle même de *ventrale*) dans notre application. 
+Les discussions de travail seront souvent centrées autour d'une `story` particulère, bien identifiée par
+son nom et sa description. Et même si une `story` appartient à un projet, nous considérerons plutôt 
+qu'elle est liée à celui-ci, et qu'elle constitue une entité à part entière.
 
 Rappelez-vous:
 
@@ -353,6 +353,10 @@ Plutôt que de conserver les commentaires en mémoires, nous travaillerons sur l
 que le commentaire est bien présent parmis les évènements de notre entité. Ainsi, lorsque la persistence de l'historique
 sera résolu, nos commentaires le seront aussi.
 
+Et c'est la que l'on peux commencer à sentir la souplesse de notre modélisation par évènement: pour ajouter de nouvelles
+informations ou de nouveaux comportements, nous nous *contentons* de rajouter de nouveaux types d'évènements.
+
+
 `specs/story_specs.js`
 
 ```js
@@ -445,5 +449,5 @@ plutard alimenter notre `Sprint`. Euh... en fait non, notre P.O. ne peux pas le 
 1. Il ne dispose pas d'interface utilisateur pour le faire
 2. Aucune persistence n'est encore assurée
 
-Notre prochaine étape consistera donc remplir ces deux conditions afin que l'on puisse commencer le plutôt possible la
+Nos prochaines étapes consisteront donc remplir ces deux conditions afin que l'on puisse commencer le plutôt possible la
 saisie des `Story` de notre projet.

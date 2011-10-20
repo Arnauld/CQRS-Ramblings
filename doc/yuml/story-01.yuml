@@ -1,0 +1,5 @@
+[Backlog]->*[Story{bg:orange}]
+[Task{bg:orange}]*->0..1[Story]
+[Story]->*[Comment]
+[Member{bg:orange}]-author>*[Comment]
+[Member]-[Story]

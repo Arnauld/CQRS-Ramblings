@@ -280,6 +280,24 @@ be consumed. Let's add some more code for completness before going to the **read
 
 The read model consumes `events` and produces `DTO`
 
+
+## CQRS - how to handle new report tables (or: how to import ALL history from the event store)
+
+From [stackoverflow](http://stackoverflow.com/questions/2559096/cqrs-how-to-handle-new-report-tables-or-how-to-import-all-history-from-the-e)
+
+> How to handle the addition of new report stores / screens, after an application has gone in production? 
+> and how to import existing (latest) data from the event store to the new report store? - Remco
+
+> You re-run the handler on the existing event log (eg you play the old events through the new event handler)
+>  – Greg Young 
+
+> Generally what is best is to: Subscribe to events of that type. Query for previous events 
+> (there may be multiple here) let subscriptions queue and process previous events one by one.
+> Then eat off subscribed events (must be idempotent so you don't double process) Part of the 
+> reason why the repository does not support it is that you would never want to do this in the
+> domain. **The repository is the contract that the domain has with the event storage.** – Greg Young 
+
+
 ## [UnitOfWork][fowler-unitofwork]
 
 > Maintains a list of objects affected by a business transaction and coordinates the writing out of 

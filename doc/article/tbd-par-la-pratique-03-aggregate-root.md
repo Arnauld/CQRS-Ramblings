@@ -1,17 +1,17 @@
 ### Echauffement
 
 Un peu de refactoring pour s'échauffer. 
-Au liew de définir tout notre domaine dans le fichier `domain.js`, associons chaque élément de notre
+Au lieu de définir tout notre domaine dans le fichier `domain.js`, associons chaque élément de notre
 domaine à un fichier spécifique:
 
 * le fichier `lib/domain.js` est alors renomé en `lib.project.js`
 * la fonction `create_project` en `create` puisque le fichier sera dédié à notre classe projet
 
-Les corrections a apporté sont alors les suivantes dans les fichiers `specs/project_specs.js` et 
+Les corrections à apporter sont alors les suivantes dans les fichiers `specs/project_specs.js` et 
 `test/project_test.js` :
 
 * modifier `var domain = require('../lib/domain')` par `var prj = require('../lib/project')` 
-* et tout les appels de méthode `domain.create_project` par `prj.create`
+* et tous les appels de méthode `domain.create_project` par `prj.create`
 
 Relançons les tests, et oh miracle ils passent tous.
 
@@ -115,8 +115,8 @@ Successivement nous:
 #### Projet et Event Sourcing: le phoenix!
 
 Bon, nous avons désormais deux types d'évènements différents. Interessons-nous à la reconstruction
-d'un projet à partir de ses évènements, rappellez-vous l'Event sourcing! Faire renaître un projet
-de ses cendres euh... de son historique!
+d'un projet à partir de ses évènements, rappellez-vous l'[Event sourcing](http://technbolts.tumblr.com/post/11317032794)! 
+Faire renaître un projet de ses cendres euh... de son historique!
 
 Exportons les classes de nos deux évènements afin qu'elles soient disponibles depuis les autres
 modules.
@@ -148,8 +148,8 @@ Le test correspondant à la relecture peut alors s'écrire:
 ```
 
 Rajoutons progressivement la méthode `load_from_history` sur notre module et sur notre classe `Projet`.
-La méthode sur notre module servira de `factory`, dans un premier temps, pour créer un projet à partir 
-de son historique.
+La méthode sur notre module servira de méthode de construction `factory method`, dans un premier temps, 
+pour créer un projet à partir de son historique.
 Nous obtenons alors:
 
 `lib/project.js`
@@ -273,7 +273,7 @@ Si l'on devait effectuer le même travail sur une autre entité de notre domaine
 un utilisateur de notre application: un `developer`, un `scrum master` ou encore un `product owner`) 
 ou une `Story` -  on peux constater la redondance de code dans la gestion des évènements et de l'identifiant.
 
-Nous allons donc nous interesser à généraliser ce code dans une classe (que l'on manipulera plus comme un
+Nous allons donc nous interesser à généraliser ce code dans une classe (que l'on manipulera comme un
 [`trait`](http://www.scala-lang.org/node/126) ou `mixin` compte-tenu de l'aspect dynamique du javascript) 
 dédiée que l'on pourra étendre ensuite afin de bénéficier de cette infrastructure technique.
 
@@ -282,7 +282,8 @@ de rapidement devenir in-maintenable et illisible. Commençons donc par utiliser
 pour retrouver une méthode succeptible de pouvoir gérer un évènement en fonction de son type.
 
 Après quelques tatonements (voir les méthodes `apply` et `call` de javascript [ici][apply-call-js]
-et comment le `this` intervient!) et les tests aux verts, voici les changements que nous avons faits:
+et comment le `this` est une notion particulière en javascript!) et les tests aux verts, voici les 
+changements que nous avons faits:
 
 [apply-call-js]:http://www.coursweb.ch/javascript/apply-call.html
 
@@ -417,7 +418,7 @@ semble-t-il, réservée aux modules "externes" de notre application.
 
 Enfin, en regardant le code de notre classe `Project` on constate que nous avons deux constructeurs,
 à deux endroits différents de notre code. Nous simplifions donc en un unique constructeur (vide) et
-déléguons à notre méthode de `create` le soin de générer l'appel initial requis.
+déléguons à notre méthode `create` le soin de générer l'appel initial requis.
 
 Enfin, nous enlevons nos commentaires farfelu `// wrapping functions to make values *immutables*`
 puisque il est toujours possible en javascript de redefinir la fonction. Il n'est donc, à ma 
@@ -610,7 +611,7 @@ Mis en place, notre classe `Project` devient:
 ```
 
 Une séance plutôt technique de préparation, avant une grande ligne droite de fonctionnel.
-Après s'être fait un peu la main sur notre entité de projet, nous interesserons la prochaine
+Après s'être fait un peu la main sur notre entité de projet, nous nous interesserons la prochaine
 fois au `backlog` et aux `story`.
 
 
