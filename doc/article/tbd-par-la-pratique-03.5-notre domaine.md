@@ -9,12 +9,45 @@ Je ne vais pas y échapper afin d'avoir une base de discussion.
 ![Domain Overview][domain-overview-01]
 
 <table style="border:0">
-	<tr><td>![Project][project]</td><td>&nbsp;           </td><td>&nbsp;       </td></tr>
-	<tr><td>![Team][team]      </td><td>![Member][member]</td><td>![User][user]</td></tr>
-	<tr><td>![Backlog][backlog]</td><td>![Story][story]  </td><td>![Comment][comment]</td></tr>
-	<tr><td>![Sprint][sprint]  </td><td>![Task][task]    </td><td>&nbsp;       </td></tr>
+	<tr>
+		<td>
+			<img src="https://github.com/Arnauld/CQRS-Ramblings/blob/master/doc/images/overall-domain-project-yuml.png?raw=true" alt="Project class">
+		</td>
+		<td>&nbsp;</td>
+		<td>&nbsp;</td>
+	</tr>
+	<tr>
+		<td>
+			<img src="https://github.com/Arnauld/CQRS-Ramblings/blob/master/doc/images/overall-domain-team-yuml.png?raw=true" alt="Team class">    
+		</td>
+		<td>
+			<img src="https://github.com/Arnauld/CQRS-Ramblings/blob/master/doc/images/overall-domain-member-yuml.png?raw=true" alt="Member class">
+		</td>
+		<td>
+			<img src="https://github.com/Arnauld/CQRS-Ramblings/blob/master/doc/images/overall-domain-user-yuml.png?raw=true" alt="User class">
+		</td>
+	</tr>
+	<tr>
+		<td>
+			<img src="https://github.com/Arnauld/CQRS-Ramblings/blob/master/doc/images/overall-domain-backlog-yuml.png?raw=true" alt="Backlog class">
+		</td>
+		<td>
+			<img src="https://github.com/Arnauld/CQRS-Ramblings/blob/master/doc/images/overall-domain-story-yuml.png?raw=true" alt="Story class">
+		</td>
+		<td>
+			<img src="https://github.com/Arnauld/CQRS-Ramblings/blob/master/doc/images/overall-domain-comment-yuml.png?raw=true" alt="Comment class">
+		</td>
+	</tr>
+	<tr>
+		<td>
+			<img src="https://github.com/Arnauld/CQRS-Ramblings/blob/master/doc/images/overall-domain-sprint-yuml.png?raw=true" alt="Sprint class">
+		</td>
+		<td>
+			<img src="https://github.com/Arnauld/CQRS-Ramblings/blob/master/doc/images/overall-domain-task-yuml.png?raw=true" alt="Task class">
+		</td>
+		<td>&nbsp;</td>
+	</tr>
 </table>
-
 
 
 [domain-overview-01]:https://github.com/Arnauld/CQRS-Ramblings/blob/master/doc/images/overall-domain-01-yuml.png?raw=true
