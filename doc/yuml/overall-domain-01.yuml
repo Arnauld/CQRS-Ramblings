@@ -1,0 +1,8 @@
+[Project{bg:orange}]+-[Backlog]
+[Backlog]-*>[Story{bg:orange}]
+[Project]+-*>[Sprint]
+[Sprint{bg:orange}]-*>[Task]
+[Task{bg:orange}]*-0..1>[Story]
+[Project]+-[Team]
+[Team]-+>[Member|role]
+[Member{bg:orange}]*-1>[User]
