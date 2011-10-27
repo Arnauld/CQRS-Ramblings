@@ -116,8 +116,12 @@ Les modifications des objets contenus dans l'agrégat (`Entity` ou `Value Object
 l'agrégat afin de contrôler et maintenir cette intégrité. 
 La racine d'un agrégat (`AggregateRoot`) est toujours une entité (une identité est en effet nécessaire pour charger
 un agrégat depuis un `Repository`). Cette entité est ainsi chargée de contôler tous les accès
-à ses enfants (les membres de l'agrégats).**
+à ses enfants (les membres de l'agrégat).**
 
+
+![Story, Sprint and Task Overview][overview-story-sprint-task-01]
+
+[overview-story-sprint-task-01]:https://github.com/Arnauld/CQRS-Ramblings/blob/master/doc/images/overall-domain-story-sprint-task-yuml.png?raw=true
 
 
 
