@@ -21,7 +21,7 @@ AggregateRoot.prototype = {
 	apply_event : function (event) {
 		var handler = this.event_handlers["on_"+event.event_type()];
 		if(typeof handler === 'undefined') {
-			throw new Error("Unknown event type: <" + event.event_type() + ">");
+			throw new Error("No handler bound for event type: <" + event.event_type() + ">");
 		}
 		handler.call(this, event);
 

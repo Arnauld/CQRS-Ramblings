@@ -8,6 +8,17 @@ Je ne vais pas y échapper afin d'avoir une base de discussion.
 
 ![Domain Overview][domain-overview-01]
 
+
+
+[domain-overview-01]:https://github.com/Arnauld/CQRS-Ramblings/blob/master/doc/images/overall-domain-01-yuml.png?raw=true
+
+On y retrouve nos principaux concepts, à savoir:
+
+* Le projet
+* L'équipe et ses membres
+* Le Backlog et ses Stories
+* Les Sprints et leurs Tasks
+
 <table style="border:0">
 	<tr>
 		<td>
@@ -50,18 +61,6 @@ Je ne vais pas y échapper afin d'avoir une base de discussion.
 </table>
 
 
-[domain-overview-01]:https://github.com/Arnauld/CQRS-Ramblings/blob/master/doc/images/overall-domain-01-yuml.png?raw=true
-[project]:https://github.com/Arnauld/CQRS-Ramblings/blob/master/doc/images/overall-domain-project-yuml.png?raw=true
-[team]:https://github.com/Arnauld/CQRS-Ramblings/blob/master/doc/images/overall-domain-team-yuml.png?raw=true
-[backlog]:https://github.com/Arnauld/CQRS-Ramblings/blob/master/doc/images/overall-domain-backlog-yuml.png?raw=true
-
-On y retrouve nos principaux concepts, à savoir:
-
-* Le projet
-* L'équipe et ses membres
-* Le Backlog et ses Stories
-* Les Sprints et leurs Tasks
-
 La notion de projet ajoute une indirection initiale, et permet à une même personne d'appartenir à plusieurs
 projet et même d'avoir un rôle différent dans chacun: une personne peut être `developer` dans un projet et
 `scrum master` dans un autre, voir être membre de plusieurs projets.
@@ -103,8 +102,21 @@ influencer notre modélisation. Dans une approche ORM de type hibernate, on pren
 pas définir une relation bidirectionnelle entre un Project (ou son backlog) et ses Stories. Même en `lazy loading`
 cela peut avoir des conséquences catastrophique sur la mêmoire de notre application.
 
-Définissons désormais nos entités et nos aggrégats.
+Définissons désormais nos entités et nos agrégats.
 
+####Rappel 
+
+**Une entité (`Entity`) est un objet avec une identité propre et un état. Généralement, l'état d'une entité
+évolue dans le temps à travers l'application. Une entité ne possède généralement que des méthodes fonctionnelles et
+aucuns accesseurs.** 
+
+**Un agrégat (`Aggregate`) est un ensemble d'objets faisant un tout et maintenu dans un état toujours consistant et 
+intègre. La racine d'un agrégat (`AggregateRoot`) est ce qui maintient ce tout.
+Les modifications des objets contenus dans l'agrégat (`Entity` ou `Value Object`) se font toujours à travers 
+l'agrégat afin de contrôler et maintenir cette intégrité. 
+La racine d'un agrégat (`AggregateRoot`) est toujours une entité (une identité est en effet nécessaire pour charger
+un agrégat depuis un `Repository`). Cette entité est ainsi chargée de contôler tous les accès
+à ses enfants (les membres de l'agrégats).**
 
 
 

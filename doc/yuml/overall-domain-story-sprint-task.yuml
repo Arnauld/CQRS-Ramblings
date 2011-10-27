@@ -1,0 +1,5 @@
+[<<AggregateRoot>>;Story]->1[<<ValueObject>>;ProjectId{bg:orange}]
+[<<AggregateRoot>>;Story]->1[<<ValueObject>>;StoryId{bg:orange}]
+[<<AggregateRoot>>;Sprint]->1[<<ValueObject>>;ProjectId{bg:orange}]
+[<<AggregateRoot>>;Sprint]<>-*[<<Entity>>;Task]
+[<<Entity>>;Task]-0..1>[<<ValueObject>>;StoryId{bg:orange}]
