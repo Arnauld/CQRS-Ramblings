@@ -122,7 +122,7 @@ doit permettre aux utilisateurs de créer un compte sur l'application, et leur p
 un ou plusieurs projets.
 Un utilisateur est donc une **entité** à part entière qui possède son propre cycle d'évolution.
 
-![User Overview](https://github.com/Arnauld/CQRS-Ramblings/blob/master/doc/images/overall-domain-user-75%-yuml.png?raw=true)
+![User Overview](https://github.com/Arnauld/CQRS-Ramblings/blob/master/doc/images/overall-domain-user-75%25-yuml.png?raw=true)
 
 Un utilisateur sera décrit par son identifiant et son mot de passe dans un premier temps.
 
@@ -160,7 +160,7 @@ En passant, nous permettrons aussi à un membre de l'équipe de changer de rôle
     project.change_member_role(user_id, MemberRole.SCRUM_MASTER);
 ```
 
-![Project, User and Member Overview](https://github.com/Arnauld/CQRS-Ramblings/blob/master/doc/images/overall-domain-project-member-75%-yuml.png?raw=true)
+![Project, User and Member Overview](https://github.com/Arnauld/CQRS-Ramblings/blob/master/doc/images/overall-domain-project-member-75%25-yuml.png?raw=true)
 
 
 #### Sprint
@@ -175,7 +175,7 @@ modifiée et gérée directement. Il en est de même pour les `Task` au sein d'u
 considérer les `Story` et les `Task` comme des entités à part entière et même manipulables directement, c'est à
 dire des `AggregateRoot`.
 
-![Story, Sprint and Task Overview](https://github.com/Arnauld/CQRS-Ramblings/blob/master/doc/images/overall-domain-story-sprint-task-75%-yuml.png?raw=true)
+![Story, Sprint and Task Overview](https://github.com/Arnauld/CQRS-Ramblings/blob/master/doc/images/overall-domain-story-sprint-task-75%25-yuml.png?raw=true)
 
 Interessons-nous rapidement à la création et aux méthodes de manipulation de nos entités.
 
