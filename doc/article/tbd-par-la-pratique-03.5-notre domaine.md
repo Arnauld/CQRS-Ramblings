@@ -8,8 +8,6 @@ Je ne vais pas y échapper afin d'avoir une base de discussion.
 
 ![Domain Overview][domain-overview-01]
 
-
-
 [domain-overview-01]:https://github.com/Arnauld/CQRS-Ramblings/blob/master/doc/images/overall-domain-01-yuml.png?raw=true
 
 On y retrouve nos principaux concepts, à savoir:
@@ -104,25 +102,173 @@ cela peut avoir des conséquences catastrophique sur la mêmoire de notre applic
 
 Définissons désormais nos entités et nos agrégats.
 
-####Rappel 
+#### Rappel 
 
-**Une entité (`Entity`) est un objet avec une identité propre et un état. Généralement, l'état d'une entité
-évolue dans le temps à travers l'application. Une entité ne possède généralement que des méthodes fonctionnelles et
-aucuns accesseurs.** 
+**Une entité (`Entity`) est un objet avec une identité propre. Généralement, l'état d'une entité
+évolue dans le temps à travers l'application.** 
 
 **Un agrégat (`Aggregate`) est un ensemble d'objets faisant un tout et maintenu dans un état toujours consistant et 
-intègre. La racine d'un agrégat (`AggregateRoot`) est ce qui maintient ce tout.
-Les modifications des objets contenus dans l'agrégat (`Entity` ou `Value Object`) se font toujours à travers 
+intègre. Les modifications des objets contenus dans l'agrégat (`Entity` ou `Value Object`) se font toujours à travers 
 l'agrégat afin de contrôler et maintenir cette intégrité. 
-La racine d'un agrégat (`AggregateRoot`) est toujours une entité (une identité est en effet nécessaire pour charger
-un agrégat depuis un `Repository`). Cette entité est ainsi chargée de contôler tous les accès
-à ses enfants (les membres de l'agrégat).**
+La racine d'un agrégat (`AggregateRoot`) est ce qui maintient ce tout, il s'agit toujours d'une entité (une 
+identité est en effet nécessaire pour charger un agrégat depuis un `Repository`). 
+Cette entité est ainsi chargée de contôler tous les accès à ses enfants (les membres de l'agrégat).**
 
+
+#### Project, User and Member
+
+Tout d'abord les utilisateurs. Il s'agit des personnes qui utiliseront l'application. L'application
+doit permettre aux utilisateurs de créer un compte sur l'application, et leur permettre de rejoindre
+un ou plusieurs projets.
+Un utilisateur est donc une **entité** à part entière qui possède son propre cycle d'évolution.
+
+![User Overview][https://github.com/Arnauld/CQRS-Ramblings/blob/master/doc/images/overall-domain-user-75%-yuml.png?raw=true]
+
+Un utilisateur sera décrit par son identifiant et son mot de passe dans un premier temps.
+
+```js
+    var user_id = UserRepository.next_user_id();
+    var user = User.create(user_id, "Arnauld");
+    UserRepository.store(user);
+```
+
+Note: nous prenons parti de **fournir l'identifiant de l'entité à créer** plutôt que de laisser l'entité 
+générer elle-même un nouvel identifiant. En faisant ce choix il est ainsi beaucoup plus facile de rendre
+la création d'une entité asynchrone. En connaissant déjà l'identifiant de l'entité, il n'est pas 
+nécessaire d'effectuer un aller-retour pour fournir l'identifiant de l'entité nouvellement créer à l'appellant.
+
+Il en est de même pour les projets:
+
+```js
+    var project_id = ProjectRepository.next_project_id();
+    var project = Project.create(project_id, "Njscrum");
+    ProjectRepository.store(project);
+```
+
+Maintenant que nous avons, nos projets et nos utilisateurs, interessons-nous à leurs interactions: un utilisateur
+peux rejoindre l'équipe d'un projet avec un rôle identifié parmis: "developer", "scrum-master" ou "product owner".
+
+```js
+	var project = ProjectRepository.find(project_id);
+    project.add_member(user_id, MemberRole.DEVELOPER);
+    ProjectRepository.store(project);
+```
+
+En passant, nous permettrons aussi à un membre de l'équipe de changer de rôle.
+
+```js
+    project.change_member_role(user_id, MemberRole.SCRUM_MASTER);
+```
+
+![Project, User and Member Overview][https://github.com/Arnauld/CQRS-Ramblings/blob/master/doc/images/overall-domain-project-member-75%-yuml.png?raw=true]
+
+
+#### Sprint
+
+
+
+#### Story et Task
+
+Au cours de notre projet, nous serons amené à crééer des stories, à les commenter, à changer leurs états. Les `Stories`
+vont avoir leur propre cycle de vie, et bien qu'elles soient rattachées à un projet, chaque `Story` pourra-t-être
+modifiée et gérée directement. Il en est de même pour les `Task` au sein d'un `Sprint`. Nous choisissons donc de
+considérer les `Story` et les `Task` comme des entités à part entière et même manipulables directement, c'est à
+dire des `AggregateRoot`.
 
 ![Story, Sprint and Task Overview][overview-story-sprint-task-01]
-
 [overview-story-sprint-task-01]:https://github.com/Arnauld/CQRS-Ramblings/blob/master/doc/images/overall-domain-story-sprint-task-yuml.png?raw=true
 
+Interessons-nous rapidement à la création et aux méthodes de manipulation de nos entités.
 
 
+```js
+    var story_id = StoryRepository.next_story_id();
+	var story = Story.create(story_id, "As a user, I can create an new account", description);
+	StoryRepository.store(story);
+	...
+	var story = StoryRepository.find(story_id);
+	story.comment(user_id, "Don't forget to check credential unicity");
+	StoryRepository.store(story);
+```
+
+```js
+	var task_id = TaskRepository.new_task_id();
+	var task = Task.create(task_id);
+	TaskRepository.store(task);
+```
+
+De la même façon qu'une `Story` peut être rattachée à un `Project`, 
+une `Task` peut être rattachée à `Sprint` et à une `Story`.
+
+Deux choix apparaissent alors pour `Story/Project`:
+
+```js
+	var story = StoryRepository.find(story_id);
+	story.attach_to_project(project_id);
+```
+
+ou
+
+```js
+	var project = ProjectRepository.find(project_id);
+	project.attach_story(story_id);
+```
+
+de même pour `Story/Task`:
+
+
+```js
+	var task  = TaskRepository.find(task_id);
+	var task.attach_to_story(story_id);
+```
+
+ou
+
+```js
+	var story = StoryRepository.find(story_id);
+	story.attach_task(task_id);
+```
+
+et enfin pour `Sprint/Task`:
+
+```js
+	var task  = TaskRepository.find(task_id);
+	var task.attach_to_sprint(sprint_id);
+```
+
+ou
+
+```js
+	var sprint = SprintRepository.find(sprint_id);
+	sprint.attach_task(task_id);
+```
+
+Il est interessant de constater que l'on retrouve la notion contenant/contenu dans la terminologie
+générique choisie: `attach_xxx` et `attach_to_xxx` respectivement. Si l'on se place en tant qu'observateur
+de ces changements, il est donc plus facile de regarder le contenant changé, que chacun des objets qui lui
+est affecté.
+
+Si l'on utilise une terminologie plus métier cette notion est effacée au profit
+d'une sémantique plus riche:
+
+* Une `Story`  est un élément du `Backlog` d'un `Project`
+* Une `Story` est découpée en `Task`
+* Une `Task` est affectée à un `Sprint`
+
+Nos méthodes deviendraient alors:
+
+```js
+    var project = ProjectRepository.find(project_id);
+	project.add_backlog_item(story_id);
+
+	...
+
+	var story = StoryRepository.find(story_id);
+	story.add_sub_task(task_id);
+
+	...
+
+	var task = TaskRepository.find(task_id);
+	task.affect_to(sprint_id);
+```
 

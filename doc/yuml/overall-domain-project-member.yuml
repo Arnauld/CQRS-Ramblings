@@ -1,0 +1,4 @@
+[<<AggregateRoot>>;Project{bg:yellow}]1->1[<<ValueObject>>;ProjectId{bg:green}]
+[<<AggregateRoot>>;Project]<>-*[<<Entity>>;TeamMember{bg:yellow}]
+[<<Entity>>;TeamMember]->1[<<ValueObject>>;UserId{bg:green}]
+[<<AggregateRoot>>;User]->1[<<ValueObject>>;UserId{bg:green}]
