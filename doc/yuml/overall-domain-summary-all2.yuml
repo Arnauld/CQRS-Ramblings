@@ -1,0 +1,11 @@
+[AggregateRoot]^[Project]
+[AggregateRoot]^[Story]
+[AggregateRoot]^[Sprint]
+[AggregateRoot]^[User]
+#
+[Project|+add_member(:user_id :role)]
+[Story]
+[Sprint]
+[User]
+#
+[Repository(T)|+next_id();+store(T);find(id):T]

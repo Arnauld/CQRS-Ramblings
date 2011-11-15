@@ -1,0 +1,6 @@
+[<<AggregateRoot>>;Project]1->1[<<ValueObject>>;ProjectId{bg:green}]
+[<<AggregateRoot>>;Story]->1[<<ValueObject>>;ProjectId{bg:green}]
+[<<AggregateRoot>>;Sprint]->1[<<ValueObject>>;ProjectId{bg:green}]
+[<<AggregateRoot>>;User]1->1[<<ValueObject>>;UserId{bg:green}]
+
+[<<Repository>>;UserRepository|+next_user_id();+store(User)]

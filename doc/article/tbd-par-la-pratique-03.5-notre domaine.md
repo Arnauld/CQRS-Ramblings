@@ -61,7 +61,7 @@ On y retrouve nos principaux concepts, à savoir:
 
 La notion de projet ajoute une indirection initiale, et permet à une même personne d'appartenir à plusieurs
 projet et même d'avoir un rôle différent dans chacun: une personne peut être `developer` dans un projet et
-`scrum master` dans un autre, voir être membre de plusieurs projets.
+`scrum master` dans un autre, une même personne peut même être membre de plusieurs projets.
 
 Quantifions un peu les choses, histoire d'avoir une perception de la volumétrie que nous pouvons être amenée
 à manipuler.
@@ -122,13 +122,17 @@ doit permettre aux utilisateurs de créer un compte sur l'application, et leur p
 un ou plusieurs projets.
 Un utilisateur est donc une **entité** à part entière qui possède son propre cycle d'évolution.
 
+Note: De manière générale, dans notre discours chaque type d'entité aura un type de `Value Object` dédié
+à son identité. Ainsi, les références à une entité se feront en ayant une référence vers le `Value Object`
+correspondant.
+
 ![User Overview](https://github.com/Arnauld/CQRS-Ramblings/blob/master/doc/images/overall-domain-user-75%25-yuml.png?raw=true)
 
 Un utilisateur sera décrit par son identifiant et son mot de passe dans un premier temps.
 
 ```js
     var user_id = UserRepository.next_user_id();
-    var user = User.create(user_id, "Arnauld");
+    var user = User.create(user_id, "Arnauld", "Mot de passe");
     UserRepository.store(user);
 ```
 
@@ -136,6 +140,17 @@ Note: nous prenons parti de **fournir l'identifiant de l'entité à créer** plu
 générer elle-même un nouvel identifiant. En faisant ce choix il est ainsi beaucoup plus facile de rendre
 la création d'une entité asynchrone. En connaissant déjà l'identifiant de l'entité, il n'est pas 
 nécessaire d'effectuer un aller-retour pour fournir l'identifiant de l'entité nouvellement créer à l'appellant.
+
+Si l'on utilise des `UUID`, la génération du prochain identifiant d'utilisateur se résume simplement à:
+
+```js
+    var uuid  = require('node-uuid');
+    ...
+    UserRepository.prototype.next_user_id = uuid;
+
+    ...
+    var new_user_id = UserRepository.next_user_id();
+```
 
 Il en est de même pour les projets:
 
@@ -145,7 +160,7 @@ Il en est de même pour les projets:
     ProjectRepository.store(project);
 ```
 
-Maintenant que nous avons, nos projets et nos utilisateurs, interessons-nous à leurs interactions: un utilisateur
+Maintenant que nous avons nos projets et nos utilisateurs, interessons-nous à leurs interactions: un utilisateur
 peux rejoindre l'équipe d'un projet avec un rôle identifié parmis: "developer", "scrum-master" ou "product owner".
 
 ```js
@@ -163,13 +178,166 @@ En passant, nous permettrons aussi à un membre de l'équipe de changer de rôle
 ![Project, User and Member Overview](https://github.com/Arnauld/CQRS-Ramblings/blob/master/doc/images/overall-domain-project-member-75%25-yuml.png?raw=true)
 
 
-#### Sprint
+Interessons-nous à la partie 'Command' désormais. Compte-tenu de la simplicité de notre modèle les commandes
+sont-elles même très simples:
+
+```js
+	var CreateProjectCommand = function(project_id, project_name) {
+		assertNotEmpty(command.project_name);
+		assertNotEmpty(command.project_id);
+		this.project_name = project_name;
+		this.project_id   = project_id;
+	};
+
+	...
+
+	CreateProjectCommandHandler.prototype.handle = function(command) {
+		assertInstanceOf(command, CreateProjectCommand);
+		var project = Project.create(command.project_id, command.project_name);
+	    ProjectRepository.store(project);
+	}
+```
+
+```js
+	var JoinProjectCommand = function(project_id, user_id, role_id) {
+		assertNotEmpty(project_id);
+		assertNotEmpty(user_id);
+		assertNotEmpty(role_id);
+		this.project_name = project_name;
+		this.user_id      = user_id;
+		this.role_id      = role_id;	
+	}
+
+	...
+
+	JoinProjectCommandHandler.prototype.handle = function(command) {
+		assertInstanceOf(command, JoinProjectCommand);
+		assert(ProjectRepository.exists(command.project_id));
+		var user = UserRepository.find(command.user_id);
+		user.join_project(command.project_id, command.role_id);
+		UserRepository.store(user);
+	}
+```
+
+Revenons sur le `JoinProjectCommandHandler`, il existe deux alternatives soit l'utilisateur
+joint le projet, soit un nouveau membre est ajouté au projet:
+
+* `project.add_member(user_id, role_id);`
+* `user.join_project(project_id, role_id);`
+
+Dans le premier cas, le projet est chargé puis modifié. Dans l'autre cas l'utilisateur est chargé puis modifié.
+On peux sans grand risque penser que l'activité d'un projet, et donc son historique, sera beaucoup plus importante
+que celle d'un utilisateur donné, si celui-ci porte l'intégralité des changements auquel il participe. 
+Il est donc fort probable que le chargement d'un utilisateur (depuis son
+historique, souvenez-vous l'`Event Sourcing`) soit moins consomateur que le chargement d'un projet.
+Cependant l'entité centrale reste le Projet, les observateurs scrutent le projet et ses modifications afin
+de détecter qu'un utilisateur rejoint le projet. Ceci nous amène donc à revenir sur l'implémentation de la
+gestion de notre dernière commande:
+
+```js
+	JoinProjectCommandHandler.prototype.handle = function(command) {
+		assertInstanceOf(command, JoinProjectCommand);
+		assert(UserRepository.exists(command.user_id));
+		var project = ProjectRepository.find(command.project_id);
+		project.add_member(command.user_id, command.role_id);
+		ProjectRepository.store(project);
+	}
+```
+
+Hummmm... cela me laisse tout de même perplexe, si l'on se place d'un point de vue du `User` comment
+savoir qu'il a rejoint un projet? Doit-on scanner tous projets un à un pour vérifier si l'utilisateur l'a
+rejoint et ne l'a pas encore quitté? Et bien la réponse ne se trouve pas de ce côté ci. Mais du côté des 
+requêtes. Souvenez-vous la séparation read/write. Nous décrivons ici la partie `write`, la partie `read`
+sera abordée un peu plus loin dans l'article.
+
+Admettons... mais si la reconstruction d'un projet depuis son historique est aussi longue, comment va-t-on
+faire? Et bien nous mettrons en place la notion de [`snapshot`](http://blog.jonathanoliver.com/2009/03/event-sourcing-and-snapshots/) 
+de nos agrégats. C'est à dire brièvement, que nous prendrons un cliché de cet agrégat à une version donnée, 
+qui sera utilisé pour reconstruire cet agrégat directement dans cette version, il ne restera que
+l'historique restant à rejouer. Selon la fréquence de nos clichés, la reconstruction de notre agrégat 
+sera plus ou moins rapide.
+
+#### Optimistic Locking
+
+Abordons, en passant, un autre point: les accès concurrents. Un projet est un type d'entité qui sera 
+potentiellement beaucoup sollicité de manière concurrente par plusieurs utilisateurs: le `PO` créé sans
+cesse de nouvelles `Stories`, tandis que de nos utilisateurs rejoignent le projet.
+
+Lorsqu'un projet est récupéré depuis son `Repository`, nous obtenons une instance de ce projet dans une
+version donnée (directement liée à la taille de son historique, et oui la taille compte).
+Toutes les modifications faites par la suite sont matérialisées par de nouveaux évènements qui devront
+être rajoutés à cet historique à condition que celui-ci soit toujours dans la même version (la 
+c'est le système de persistence qui va statuer) au moment de la sauvegarde: il s'agit d'une implémentation
+simple et efficace de l'[Optimistic Locking](http://docs.jboss.org/hibernate/core/3.3/reference/en/html/transactions.html#transactions-optimistic)
+
+La gestion de ce verrouillage optimiste est ensuite propre à chaque commande: peut-on rejouer la commande
+dans ce cas? Eh bien, c'est à chaque commande d'en décider. Dans le cas de notre commande
+`JoinProjectCommand` l'état courant du projet importe peu voir pas du tout: on peux sans risque rejouer la
+commande.
+
+Nous ajouterons donc dans notre chaîne de traitement un `CommandDispatcher`: il receptionera les commandes
+émis par l'utilisateur et les redigera vers le `CommandHandler` adéquat. En cas d'échec de type `Optimistic
+Locking`, il sera responsable, si la commande le supporte de la re-distribuer.
+
+```js
+    var dispatcher = ...
+    
+    
+    dispatcher.dispatch(command, function(error) {
+    	if(error) {
+    		log.error("Erf!", error);
+    		getChannel(command.errorChannel).send(new CommandInErrorMessage(command,error));
+    	}
+    	else {
+    		log.info("Houra!");
+    		getChannel(command.sucessChannel).send(new CommandSucessful(command));
+    	}
+    });
+
+```
 
 
+```js
 
-#### Story et Task
+    CommandDispatcher.prototype.dispatch = function(command, callback) {
+    	var handler = findHandler(command);
+    	if(typeof handler === "undefined") {
+    		return callback(new NoHandlerBoundForCommand(command));
+    	}
 
-Au cours de notre projet, nous serons amené à crééer des stories, à les commenter, à changer leurs états. Les `Stories`
+    	var maxRetry = 10; // <======= must be configurable
+    	var tryNb = 0;
+    	var lastError;
+    	for(;tryNb<maxRetry;tryNb++) {
+    		try {
+    			handler.handle(command);
+    			// everything ok: break the loop
+    			return callback();
+    		}
+    		catch(e) {
+    			lastError = e;
+    			if(typeof e === OptimisticLockingException) {
+    				if(!command.canRetry()) { // <=================== the retry behavior
+    					// nothing can be done
+    					return callback(e);
+    				}
+    			}
+    			else {
+    				// rethrow as is
+    				return callback(e);
+    			}
+    		}
+    	}
+        
+    	// erf... still there: OptimisticLockingException
+    	callback(lastError);
+    }
+```
+
+
+#### Sprint, Story et Task
+
+Au cours de notre projet, nous serons amené à créer des stories, à les commenter, à changer leurs états. Les `Stories`
 vont avoir leur propre cycle de vie, et bien qu'elles soient rattachées à un projet, chaque `Story` pourra-t-être
 modifiée et gérée directement. Il en est de même pour les `Task` au sein d'un `Sprint`. Nous choisissons donc de
 considérer les `Story` et les `Task` comme des entités à part entière et même manipulables directement, c'est à
@@ -184,9 +352,11 @@ Interessons-nous rapidement à la création et aux méthodes de manipulation de 
     var story_id = StoryRepository.next_story_id();
 	var story = Story.create(story_id, "As a user, I can create an new account", description);
 	StoryRepository.store(story);
+
 	...
+
 	var story = StoryRepository.find(story_id);
-	story.comment(user_id, "Don't forget to check credential unicity");
+	story.comment(user_id, "Don't forget to check credential uniqueness");
 	StoryRepository.store(story);
 ```
 
@@ -247,6 +417,8 @@ générique choisie: `attach_xxx` et `attach_to_xxx` respectivement. Si l'on se 
 de ces changements, il est donc plus facile de regarder le contenant changé, que chacun des objets qui lui
 est affecté.
 
+
+
 Si l'on utilise une terminologie plus métier cette notion est effacée au profit
 d'une sémantique plus riche:
 
@@ -254,7 +426,7 @@ d'une sémantique plus riche:
 * Une `Story` est découpée en `Task`
 * Une `Task` est affectée à un `Sprint`
 
-Nos méthodes deviendraient alors:
+Nos méthodes deviennent alors:
 
 ```js
     var project = ProjectRepository.find(project_id);
@@ -271,3 +443,100 @@ Nos méthodes deviendraient alors:
 	task.affect_to(sprint_id);
 ```
 
+#### Résumé
+
+En bref et synthétique pour un développeur, nous voulons pour la partie commande et `domain` de notre application:
+
+```scala
+    case class UserId extends UUID
+    case class ProjectId extends UUID
+    case class StoryId extends UUID
+    case class SprintId extends UUID
+    case class TaskId extends UUID
+``` 
+
+```scala
+    trait CommentAware {
+        def comment(author:UserId, message:String);
+    }
+```
+
+```scala
+	case class CommentAdded(commentee:UUID, author:UserId, message:String) extends Event
+```
+
+```scala
+    abstract class Event {
+    	def createdBy(creator:UserId);
+    }
+```
+
+```scala
+    object User {
+    	def create(user_id:UserId, login:String, password:String);
+    }
+    class User extends AggregateRoot with CommentAware {
+    }
+```
+
+```scala
+	case class UserCreated(user_id:UserId, login:String, password:String) extends Event
+	case class UserLoginChanged(user_id:UserId, login:String) extends Event
+```
+
+```scala
+	object Project {
+    	def create(project_id:ProjectId, project_name:String, owner:UserId);
+    }
+    class Project extends AggregateRoot with CommentAware {
+        def add_member(user_id:UserId, role:TeamMemberRole);
+        def add_backlog_item(story_id:StoryId);
+    }
+```
+
+```scala
+	case class ProjectCreated(project_id:ProjectId, project_name:String, owner:UserId) extends Event
+	case class ProjectOwnerChanged(project_id:ProjectId, owner:UserId) extends Event
+	case class MemberJoined(project_id:ProjectId, user_id:UserId, role:TeamMemberRole) extends Event
+	case class MemberLeft(project_id:ProjectId, user_id:UserId) extends Event
+	case class MemberFired(project_id:ProjectId, user_id:UserId) extends Event
+
+	case class StoryAdded(project_id:ProjectId, story_id:StoryId) extends Event
+	case class StoryDeleted(project_id:ProjectId, story_id:StoryId) extends Event
+	case class StoryReassigned(project_id:ProjectId, new_project_id:ProjectId, story_id:StoryId) extends Event
+```
+
+
+```scala
+	object Story {
+		def create(story_id:StoryId, story_title:String, story_description:String);
+    }
+    class Story extends AggregateRoot with CommentAware {
+        def attach_task(task_id:TaskId);
+    }
+```
+
+```scala
+	case class StoryCreated(story_id:StoryId, story_title:String, story_description:String) extends Event
+	case class StoryTaskAttached(story_id:StoryId, task_id:TaskId) extends Event
+```
+
+
+```groovy
+	object Sprint {
+		def create(sprint_id:SprintId, sprint_objectives:String);
+    }
+    class Sprint extends AggregateRoot with CommentAware {
+        def define_range(date_range:DateRange);
+    }
+```
+
+```groovy
+	object Task {
+		def create(task_id:TaskId, task_title:String);
+    }
+    class Task extends AggregateRoot with CommentAware {
+        def affect_to(sprint_id:SprintId);
+        def change_state(new_state:TaskState);
+    }
+```
