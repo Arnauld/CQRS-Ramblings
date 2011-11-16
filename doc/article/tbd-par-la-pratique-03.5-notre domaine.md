@@ -343,6 +343,9 @@ modifiée et gérée directement. Il en est de même pour les `Task` au sein d'u
 considérer les `Story` et les `Task` comme des entités à part entière et même manipulables directement, c'est à
 dire des `AggregateRoot`.
 
+Un `Sprint` est rattaché à un projet (via une référence à `ProjectId`). Il en est de même pour les `Story`.
+Une `Task` peut être rattachée à une `Story` et peut aussi être rattachée à un `Sprint`
+
 ![Story, Sprint and Task Overview](https://github.com/Arnauld/CQRS-Ramblings/blob/master/doc/images/overall-domain-story-sprint-task-75%25-yuml.png?raw=true)
 
 Interessons-nous rapidement à la création et aux méthodes de manipulation de nos entités.

@@ -1,7 +1,7 @@
 [<<AggregateRoot>>;Story]->1[<<ValueObject>>;ProjectId{bg:green}]
 [<<AggregateRoot>>;Story]->1[<<ValueObject>>;StoryId{bg:green}]
 [<<AggregateRoot>>;Sprint]->1[<<ValueObject>>;ProjectId{bg:green}]
-[<<AggregateRoot>>;Sprint]-*[<<AggregateRoot>>;Task]
+[<<AggregateRoot>>;Sprint]0..1-*[<<AggregateRoot>>;Task]
 [<<AggregateRoot>>;Task]->1[<<ValueObject>>;TaskId{bg:green}]
 [<<AggregateRoot>>;Task]-0..1>[<<ValueObject>>;StoryId{bg:green}]
 [<<AggregateRoot>>;Task]-*[<<Entity>>;Comment{bg:orange}]
