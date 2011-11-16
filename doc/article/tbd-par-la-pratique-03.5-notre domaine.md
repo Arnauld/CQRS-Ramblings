@@ -8,7 +8,7 @@ Je ne vais pas y échapper afin d'avoir une base de discussion.
 
 ![Domain Overview][domain-overview-01]
 
-[domain-overview-01]:https://github.com/Arnauld/CQRS-Ramblings/blob/master/doc/images/overall-domain-01-yuml.png?raw=true
+[domain-overview-01]:https://github.com/Arnauld/CQRS-Ramblings/blob/master/doc/images/overall-domain-01-75%25-yuml.png?raw=true
 
 On y retrouve nos principaux concepts, à savoir:
 
@@ -20,39 +20,39 @@ On y retrouve nos principaux concepts, à savoir:
 <table style="border:0">
 	<tr>
 		<td>
-			<img src="https://github.com/Arnauld/CQRS-Ramblings/blob/master/doc/images/overall-domain-project-yuml.png?raw=true" alt="Project class">
+			<img src="https://github.com/Arnauld/CQRS-Ramblings/blob/master/doc/images/overall-domain-project-75%25-yuml.png?raw=true" alt="Project class">
 		</td>
 		<td>&nbsp;</td>
 		<td>&nbsp;</td>
 	</tr>
 	<tr>
 		<td>
-			<img src="https://github.com/Arnauld/CQRS-Ramblings/blob/master/doc/images/overall-domain-team-yuml.png?raw=true" alt="Team class">    
+			<img src="https://github.com/Arnauld/CQRS-Ramblings/blob/master/doc/images/overall-domain-team-75%25-yuml.png?raw=true" alt="Team class">    
 		</td>
 		<td>
-			<img src="https://github.com/Arnauld/CQRS-Ramblings/blob/master/doc/images/overall-domain-member-yuml.png?raw=true" alt="Member class">
+			<img src="https://github.com/Arnauld/CQRS-Ramblings/blob/master/doc/images/overall-domain-member-75%25-yuml.png?raw=true" alt="Member class">
 		</td>
 		<td>
-			<img src="https://github.com/Arnauld/CQRS-Ramblings/blob/master/doc/images/overall-domain-user-yuml.png?raw=true" alt="User class">
-		</td>
-	</tr>
-	<tr>
-		<td>
-			<img src="https://github.com/Arnauld/CQRS-Ramblings/blob/master/doc/images/overall-domain-backlog-yuml.png?raw=true" alt="Backlog class">
-		</td>
-		<td>
-			<img src="https://github.com/Arnauld/CQRS-Ramblings/blob/master/doc/images/overall-domain-story-yuml.png?raw=true" alt="Story class">
-		</td>
-		<td>
-			<img src="https://github.com/Arnauld/CQRS-Ramblings/blob/master/doc/images/overall-domain-comment-yuml.png?raw=true" alt="Comment class">
+			<img src="https://github.com/Arnauld/CQRS-Ramblings/blob/master/doc/images/overall-domain-user-75%25-yuml.png?raw=true" alt="User class">
 		</td>
 	</tr>
 	<tr>
 		<td>
-			<img src="https://github.com/Arnauld/CQRS-Ramblings/blob/master/doc/images/overall-domain-sprint-yuml.png?raw=true" alt="Sprint class">
+			<img src="https://github.com/Arnauld/CQRS-Ramblings/blob/master/doc/images/overall-domain-backlog-75%25-yuml.png?raw=true" alt="Backlog class">
 		</td>
 		<td>
-			<img src="https://github.com/Arnauld/CQRS-Ramblings/blob/master/doc/images/overall-domain-task-yuml.png?raw=true" alt="Task class">
+			<img src="https://github.com/Arnauld/CQRS-Ramblings/blob/master/doc/images/overall-domain-story-75%25-yuml.png?raw=true" alt="Story class">
+		</td>
+		<td>
+			<img src="https://github.com/Arnauld/CQRS-Ramblings/blob/master/doc/images/overall-domain-comment-75%25-yuml.png?raw=true" alt="Comment class">
+		</td>
+	</tr>
+	<tr>
+		<td>
+			<img src="https://github.com/Arnauld/CQRS-Ramblings/blob/master/doc/images/overall-domain-sprint-75%25-yuml.png?raw=true" alt="Sprint class">
+		</td>
+		<td>
+			<img src="https://github.com/Arnauld/CQRS-Ramblings/blob/master/doc/images/overall-domain-task-75%25-yuml.png?raw=true" alt="Task class">
 		</td>
 		<td>&nbsp;</td>
 	</tr>
@@ -248,7 +248,7 @@ Hummmm... cela me laisse tout de même perplexe, si l'on se place d'un point de 
 savoir qu'il a rejoint un projet? Doit-on scanner tous projets un à un pour vérifier si l'utilisateur l'a
 rejoint et ne l'a pas encore quitté? Et bien la réponse ne se trouve pas de ce côté ci. Mais du côté des 
 requêtes. Souvenez-vous la séparation read/write. Nous décrivons ici la partie `write`, la partie `read`
-sera abordée un peu plus loin dans l'article.
+sera abordée dans un prochain article.
 
 Admettons... mais si la reconstruction d'un projet depuis son historique est aussi longue, comment va-t-on
 faire? Et bien nous mettrons en place la notion de [`snapshot`](http://blog.jonathanoliver.com/2009/03/event-sourcing-and-snapshots/) 
@@ -490,6 +490,7 @@ En bref et synthétique pour un développeur, nous voulons pour la partie comman
     }
     class Project extends AggregateRoot with CommentAware {
         def add_member(user_id:UserId, role:TeamMemberRole);
+        def change_member_role(user_id:UserId, role:TeamMemberRole);
         def add_backlog_item(story_id:StoryId);
     }
 ```
@@ -498,6 +499,7 @@ En bref et synthétique pour un développeur, nous voulons pour la partie comman
 	case class ProjectCreated(project_id:ProjectId, project_name:String, owner:UserId) extends Event
 	case class ProjectOwnerChanged(project_id:ProjectId, owner:UserId) extends Event
 	case class MemberJoined(project_id:ProjectId, user_id:UserId, role:TeamMemberRole) extends Event
+	case class MemberRoleChanged(project_id:ProjectId, user_id:UserId, role:TeamMemberRole) extends Event
 	case class MemberLeft(project_id:ProjectId, user_id:UserId) extends Event
 	case class MemberFired(project_id:ProjectId, user_id:UserId) extends Event
 
@@ -518,11 +520,11 @@ En bref et synthétique pour un développeur, nous voulons pour la partie comman
 
 ```scala
 	case class StoryCreated(story_id:StoryId, story_title:String, story_description:String) extends Event
-	case class StoryTaskAttached(story_id:StoryId, task_id:TaskId) extends Event
+	case class TaskAttachedToStory(story_id:StoryId, task_id:TaskId) extends Event
 ```
 
 
-```groovy
+```scala
 	object Sprint {
 		def create(sprint_id:SprintId, sprint_objectives:String);
     }
@@ -531,7 +533,7 @@ En bref et synthétique pour un développeur, nous voulons pour la partie comman
     }
 ```
 
-```groovy
+```scala
 	object Task {
 		def create(task_id:TaskId, task_title:String);
     }
