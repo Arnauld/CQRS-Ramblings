@@ -1,0 +1,3 @@
+aggregateRoot Story {
+    change_complexity(complexity:Integer)
+}

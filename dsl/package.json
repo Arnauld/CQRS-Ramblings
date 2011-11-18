@@ -1,0 +1,18 @@
+{
+  "author": "Arnauld",
+  "name": "cqrs-mda",
+  "description": "Code generator for CQRS",
+  "version": "0.0.1",
+  "repository": {
+    "url": ""
+  },
+  "engines": {
+    "node": "*"
+  },
+  "dependencies": {
+    "jison": "*",
+    "nodeunit": "*",
+  },
+  "devDependencies": {},
+  "main": "app.js"
+}

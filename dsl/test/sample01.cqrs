@@ -1,0 +1,8 @@
+aggregateRoot Story extends HasComment {
+	factory create(story_id:StoryId, project_id:ProjectId, story_title:String, story_description:String)
+
+    change_complexity(complexity:Integer)
+    change_business_value(value:Integer)
+    change_title(title:String)
+    change_description(description:String)
+}
