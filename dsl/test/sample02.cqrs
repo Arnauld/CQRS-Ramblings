@@ -1,0 +1,9 @@
+aggregateRoot Task extends HasComment {
+	factory create(task_id:TaskId, project_id:ProjectId, task_title:String, task_description:String)
+
+    def affect_to_sprint(sprint_id:SprintId)
+    def attach_to_story(story_id:StoryId)
+    def modify_state(new_state:TaskState)
+    def change_title(title:String)
+    def change_description(description:String)
+}

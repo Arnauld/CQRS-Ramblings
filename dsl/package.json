@@ -10,8 +10,11 @@
     "node": "*"
   },
   "dependencies": {
+    "jslint": "*",
     "jison": "*",
     "nodeunit": "*",
+    "mustache": "*",
+    "underscore": "*"
   },
   "devDependencies": {},
   "main": "app.js"

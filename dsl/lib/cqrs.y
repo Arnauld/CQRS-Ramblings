@@ -72,8 +72,12 @@ featureDefList
 	;
 
 featureDef
-	: optional_factory identifier  '(' argumentList ')'
-		{$$ = yy.method($2, $4, $1);}
+	: FACTORY identifier  '(' argumentList ')'
+		{$$ = yy.factory($2, $4);}
+	| DEF  identifier  '(' argumentList ')'
+		{$$ = yy.def($2, $4);}
+	| identifier ':' identifier
+		{$$ = yy.field($1, $3);}
 	;
 
 optional_factory

@@ -1,0 +1,73 @@
+
+var methods = {
+    /**
+     * Handlers invoked by the apply_event chain.
+     */
+    event_handlers : {
+    <% event_views.forEach(function(event_view) { 
+    var event_handler = event_view.event_handler;
+    if(event_view.model.is_factory()) {
+    %>    /**
+         *  factory event handler
+         */
+    <% } else { 
+    %>    /**
+         *  method event handler
+         */
+    <% }
+    %>    <%=event_handler.on_event_method_name%>: function(event) {
+            <%  event_handler.field_assignments.forEach(function(assignment) { %>
+            <%
+                if(assignment.on_identifier) {
+                    if(event_view.model.is_factory()) {
+                        %>this.data._uuid = event.<%=assignment.event_field.name%>;<%
+                    }
+                    else {
+                        %>if(this.data._uuid!==event.<%=assignment.event_field.name%>)
+                throw new EventDoesNotBelongsToEntity("Got: <" + event.<%=assignment.event_field.name%> + " expected: <" + this.data._uuid + ">");<%
+                    }
+                }
+                else {
+                    %>this.data._<%=assignment.field.name%> = event.<%=assignment.event_field.name%>;<%
+                }
+            }); %>
+        }<% if(!event_view.last_event_view) {%>, 
+        <% } %>
+    <% }); %>
+    },
+
+    <% def_views.forEach(function(def_view) { %>
+    /**
+     *  <%=def_view.model.description%>
+     */
+    <%=def_view.method_name%> : function(<%=def_view.argument_names().join(", ")%>) {
+        this.apply_event(new <%=def_view.event_view.name%>(this._uuid, <%=def_view.argument_names().join(", ")%>));
+    }<% if(!def_view.last_def_view) { %>, <% } %><% }); %>
+};
+
+function <%=name%>() {
+    this.data = {
+        _uuid : null,<% field_views.forEach(function(field_view) { %>
+        <%=field_view.field_name%> : null<% if(!field_view.last_field_view) { %>, <% } %><% }); %>
+    };
+}
+nutil.inherits(<%=name%>, aroot.AggregateRoot);
+proto.extend(<%=name%>.prototype, methods);
+
+exports.<%=name%> = <%=name%>;
+
+<% factory_views.forEach(function(factory) { %>
+var <%=factory.method_name%> = exports.<%=factory.method_name%> = function(<%=factory.event_view.field_names().join(", ")%>)  {
+    var <%=variable_name%> = new <%=name%> ();
+    <%=variable_name%>.apply_event(new <%=factory.event_view.name%>(<%=factory.event_view.field_names().join(", ")%>));
+    return <%=variable_name%>;
+};
+<% }); %>
+
+var load_from_history = exports.load_from_history = function(events) {
+    var <%=variable_name%> = new <%=name%> ();
+    <%=variable_name%>.load_from_history(events);
+    return <%=variable_name%>;
+};
+
+

@@ -1,0 +1,13 @@
+var <%=name%> = exports.<%=name%> = function(<%=field_names().join(",")%>)  {
+    this.data = {
+        event_type : "<%=event_type%>",
+        <% fields.forEach(function (field) { 
+        %><%=field.name%> : <%=field.name%><% if(!field.last_field) {%>,<%}%>
+        <% }); %>
+    };
+};
+
+<%=name%>.prototype.event_type = function() { this.data.event_type; };
+<% fields.forEach(function (field) { 
+%><%=name%>.prototype.<%=field.name%> = function() { this.data.<%=field.name%>; };
+<% }); %>
