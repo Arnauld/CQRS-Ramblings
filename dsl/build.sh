@@ -29,8 +29,17 @@ def test()
   system("node_modules/.bin/nodeunit test")
 end
 
+def it()
+  puts ""
+  puts "Start integration-tests"
+  puts "--------------------------"
+  system("node_modules/.bin/nodeunit it")
+end
+
 command = ARGV[0] ? ARGV[0] : "all"
 case command
+  when "it"
+    it()
 	when "syntax"
 		check_syntax()
 	when "test"

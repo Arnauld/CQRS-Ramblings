@@ -7,6 +7,10 @@ var view_of = exports.view_of = function(model, view) {
     return view;
 };
 
+var inherit_model_name = exports.inherit_model_name = function(name) {
+    return name;
+};
+
 var model_name = exports.model_name = function(model) {
     return model.name;
 };
@@ -22,6 +26,11 @@ var method_name = exports.method_name = function(def) {
 var field_name = exports.field_name = function(field) {
     return field.name.underscore();
 };
+
+var field_to_name = exports.field_to_name = function(field) {
+    return field.name;
+};
+
 
 var model_id_variable_name = exports.model_id_variable_name = function(model) {
     return model.name.underscore() + "_id";
@@ -47,10 +56,7 @@ var are_fields_matching = exports.are_fields_matching = function(model, field1, 
          || ("new_"+field2.name===field1.name) 
          || (model.name.underscore() + "_" + field2.name === field1.name)
         );
-    
     var datatype_match = (field1.datatype === field2.datatype);
-    console.log("Matching: <" + field1.name + "> with <" + field2.name + "> name_match? " + name_match + ", datatype_match? " + datatype_match + ", type1: " + field1.datatype + ", type2: " + field2.datatype);
-
     return name_match && datatype_match;
 };
 

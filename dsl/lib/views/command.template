@@ -1,0 +1,21 @@
+var <%=name%> = exports.<%=name%> = function(<%=field_names().join(",")%>)  {
+    this.data = {
+        command_type : "<%=command_type%>",
+        <% fields.forEach(function (field) { 
+        %><%=field.name%> : <%=field.name%><% if(!field.last_field) {%>,<%}%>
+        <% }); %>
+    };
+};
+
+nutil.inherits(<%=name%>, command.Command);
+// <%=name%>.prototype.command_type = function() { this.data.command_type; };
+
+var <%=command_handler.name%> = exports.<%=command_handler.name%> = function() {};
+<%=command_handler.name%>.prototype.supported_types = function() {
+    return [<%=command_type%>];
+};
+<%=command_handler.name%>.prototype.handle = function(command) {
+    if(!(command instanceof <%=name%>)) {
+        throw new UnsupportedCommandType("Expected type <<%=name%>>!");
+    }
+};

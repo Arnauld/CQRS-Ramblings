@@ -11,10 +11,11 @@
   },
   "dependencies": {
     "jslint": "*",
-    "jison": "*",
+    "jison": "0.2.11",
     "nodeunit": "*",
-    "mustache": "*",
-    "underscore": "*"
+    "Sslac": "*",
+    "underscore": "*",
+    "node-uuid": "*"
   },
   "devDependencies": {},
   "main": "app.js"

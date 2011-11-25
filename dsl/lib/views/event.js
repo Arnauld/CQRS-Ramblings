@@ -96,10 +96,6 @@ var generate_event_handler = exports.generate_event_handler = function(model, fe
     return Utils.view_of(feature, view);
 };
 
-var field_to_name = function(field) {
-                            return field.name;
-                        };
-
 /**
  *
  */
@@ -113,7 +109,7 @@ var to_event_view = exports.to_event_view = function(model, feature) {
         event_type    : generate_event_type(model, feature),
         event_handler : generate_event_handler(model, feature),
         fields        : Utils.add_iteration_flags(generate_event_fields(model, feature), "field"),
-        field_names   : function() { return this.fields.map(field_to_name);}
+        field_names   : function() { return this.fields.map(Utils.field_to_name);}
     };
     return Utils.view_of(feature, view);
 };

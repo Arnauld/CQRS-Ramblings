@@ -7,11 +7,6 @@ var parse = exports.parse = function (input) {
     return parser.parse(input);
 };
 
-// returns the stringified JSON object
-var compile = exports.compile = function (input, indent) {
-    return toString(parse(input), indent);
-};
-
 var toString = function(input, indent) {
     return JSON.stringify(input, null, indent||"    ");
 };
@@ -35,7 +30,7 @@ var main = exports.main = function (args) {
     var parsed = parse(input);
 
     if(args[2]) {
-        var output    = console.log
+        var output    = console.log;
         var transform = require('./'+args[2]).transform;
         asArray(parsed).forEach(function(part) {
             transform(part, output);

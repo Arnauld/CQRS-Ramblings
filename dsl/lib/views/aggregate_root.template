@@ -40,8 +40,8 @@ var methods = {
     /**
      *  <%=def_view.model.description%>
      */
-    <%=def_view.method_name%> : function(<%=def_view.argument_names().join(", ")%>) {
-        this.apply_event(new <%=def_view.event_view.name%>(this._uuid, <%=def_view.argument_names().join(", ")%>));
+    <%=def_view.method_name%> : function(unit_of_work, <%=def_view.argument_names().join(", ")%>) {
+        this.apply_event(unit_of_work, new <%=def_view.event_view.name%>(this._uuid, <%=def_view.argument_names().join(", ")%>));
     }<% if(!def_view.last_def_view) { %>, <% } %><% }); %>
 };
 
@@ -51,15 +51,18 @@ function <%=name%>() {
         <%=field_view.field_name%> : null<% if(!field_view.last_field_view) { %>, <% } %><% }); %>
     };
 }
-nutil.inherits(<%=name%>, aroot.AggregateRoot);
+sys.inherits(<%=name%>, aroot.AggregateRoot);
 proto.extend(<%=name%>.prototype, methods);
+<% inherit_views.forEach(function(inherit) {
+    %>proto.extend(<%=name%>.prototype, <%=inherit.name%>);
+<% }); %>
 
 exports.<%=name%> = <%=name%>;
 
 <% factory_views.forEach(function(factory) { %>
-var <%=factory.method_name%> = exports.<%=factory.method_name%> = function(<%=factory.event_view.field_names().join(", ")%>)  {
+var <%=factory.method_name%> = exports.<%=factory.method_name%> = function(unit_of_work, <%=factory.event_view.field_names().join(", ")%>)  {
     var <%=variable_name%> = new <%=name%> ();
-    <%=variable_name%>.apply_event(new <%=factory.event_view.name%>(<%=factory.event_view.field_names().join(", ")%>));
+    <%=variable_name%>.apply_event(unit_of_work, new <%=factory.event_view.name%>(<%=factory.event_view.field_names().join(", ")%>));
     return <%=variable_name%>;
 };
 <% }); %>

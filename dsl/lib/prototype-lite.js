@@ -7,8 +7,12 @@
 
 
 var extend = exports.extend = function (destination, source) {
-  for (var property in source)
-    destination[property] = source[property];
+  var property;
+  for(property in source) {
+      if(source.hasOwnProperty(property)) {
+          destination[property] = source[property];
+      }
+  }
   return destination;
 };
 
@@ -211,7 +215,7 @@ extend(String.prototype, (function() {
    *      //-> false  
   **/
   function empty() {
-    return this == '';
+    return this === '';
   }
 
   /**
@@ -232,7 +236,7 @@ extend(String.prototype, (function() {
    *      //-> false
   **/
   function blank() {
-    return /^\s*$/.test(this);
+    return (/^\s*$/).test(this);
   }
 
   return {
@@ -255,16 +259,8 @@ extend(String.prototype, (function() {
 
 (function() {
   var arrayProto = Array.prototype,
-      slice = arrayProto.slice,
-      _each = arrayProto.forEach; // use native browser JS 1.6 implementation if available
+      slice = arrayProto.slice;
 
-  function each(iterator, context) {
-    for (var i = 0, length = this.length >>> 0; i < length; i++) {
-      if (i in this) iterator.call(context, this[i], i, this);
-    }
-  }
-  if (!_each) _each = each;
-  
   /**
    *  Array#clear() -> Array
    *
@@ -485,7 +481,6 @@ extend(String.prototype, (function() {
   }
 
   extend(arrayProto, {
-    _each:     _each,
     clear:     clear,
     first:     first,
     last:      last,

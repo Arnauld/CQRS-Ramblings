@@ -64,9 +64,20 @@ var generate_factory_views = exports.generate_factory_views = function(model) {
 	return factory_views;
 };
 
+var generate_inherit_views = exports.generate_inherit_views = function(model) {
+	var inherit_views = model.inherits.map(function(inherit) {
+		var view = {
+			name : 	Utils.inherit_model_name(inherit)
+		};
+		return Utils.view_of(inherit, view);
+	});
+	return inherit_views;
+};
+
 var to_aggregate_root_view = exports.to_aggregate_root_view = function(model) {
 	var view = {
 		name           : Utils.model_name(model),
+		inherit_views  : Utils.add_iteration_flags(generate_inherit_views(model), "inherit_view"),
 		variable_name  : Utils.model_variable_name(model),
 		def_views      : Utils.add_iteration_flags(generate_def_views(model), "def_view"),
 		field_views    : Utils.add_iteration_flags(generate_field_views(model), "field_view"),
@@ -77,8 +88,9 @@ var to_aggregate_root_view = exports.to_aggregate_root_view = function(model) {
 };
 
 exports.transform = function(model, output) {
-	if(model.type !== "aggregate_root")
+	if(model.type !== "aggregate_root") {
 		return;
+	}
 	
     var template = fs.readFileSync(__dirname + "/aggregate_root.template", 'utf8');
     var view = to_aggregate_root_view(model);

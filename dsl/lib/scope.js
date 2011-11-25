@@ -19,12 +19,13 @@ exports.aggregate_root = function(identifier, inherits, features) {
 
 function Feature(data) {
 	proto.extend(this, data);	
-};
+}
+
 proto.extend(Feature.prototype, {
 	is_field    : function() { return this.type==="field"; },
 	is_factory  : function() { return this.type==="factory"; },
 	is_def      : function() { return this.type==="def"; },
-	is_method   : function() { return this.type==="factory" || this.type==="def" },
+	is_method   : function() { return this.type==="factory" || this.type==="def"; },
 	arguments   : []
 });
 exports.Feature = Feature;

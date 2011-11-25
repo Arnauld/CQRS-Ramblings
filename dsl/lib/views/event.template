@@ -7,7 +7,9 @@ var <%=name%> = exports.<%=name%> = function(<%=field_names().join(",")%>)  {
     };
 };
 
-<%=name%>.prototype.event_type = function() { this.data.event_type; };
+nutil.inherits(<%=name%>, event.Event);
+// <%=name%>.prototype.event_type = function() { this.data.event_type; };
+
 <% fields.forEach(function (field) { 
 %><%=name%>.prototype.<%=field.name%> = function() { this.data.<%=field.name%>; };
 <% }); %>

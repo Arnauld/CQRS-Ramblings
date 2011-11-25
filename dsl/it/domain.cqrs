@@ -1,0 +1,58 @@
+aggregateRoot User extends HasComment {
+	login:String
+	active:Boolean
+
+	factory create(user_id:UserId, login:String, password:String)
+
+	def change_login(new_login:String)
+	def activate()
+	def deactivate()
+}
+
+aggregateRoot Project extends HasComment {
+	name:String
+	owner:UserId
+
+	factory create(project_id:ProjectId, project_name:String, owner:UserId)
+
+    def add_member(user_id:UserId, role:TeamMemberRole)
+    def remove_member(user_id:UserId, role:TeamMemberRole)
+    def fire_member(firer:UserId, user_id:UserId, role:TeamMemberRole)
+    def change_member_role(user_id:UserId, role:TeamMemberRole)
+    def add_backlog_item(story_id:StoryId)
+}
+
+aggregateRoot Story extends HasComment {
+	project_id:ProjectId
+	title:String
+	description:String
+	complexity:Integer
+	business_value:Integer
+
+	factory create(story_id:StoryId, project_id:ProjectId, story_title:String, story_description:String)
+
+    def change_complexity(complexity:Integer)
+    def change_business_value(business_value:Integer)
+    def change_title(title:String)
+    def change_description(description:String)
+}
+
+aggregateRoot Sprint extends HasComment {
+	factory create(sprint_id:SprintId, project_id:ProjectId, sprint_objectives:String)
+
+    def define_range(date_range:DateRange)
+}
+
+aggregateRoot Task extends HasComment {
+	project_id:ProjectId
+	title:String
+	description:String
+
+	factory create(task_id:TaskId, project_id:ProjectId, task_title:String, task_description:String)
+
+    def affect_to_sprint(sprint_id:SprintId)
+    def attach_to_story(story_id:StoryId)
+    def change_state(new_state:TaskState)
+    def change_title(title:String)
+    def change_description(description:String)
+}
