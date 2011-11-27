@@ -15,6 +15,7 @@ aggregateRoot Project extends HasComment {
 
 	factory create(project_id:ProjectId, project_name:String, owner:UserId)
 
+	def change_name(new_name:String)
     def add_member(user_id:UserId, role:TeamMemberRole)
     def remove_member(user_id:UserId, role:TeamMemberRole)
     def fire_member(firer:UserId, user_id:UserId, role:TeamMemberRole)

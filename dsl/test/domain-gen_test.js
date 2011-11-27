@@ -1,5 +1,5 @@
 var Sslac  = require("sslac"),
-    domain = require("./sslac_domain");
+    domain = require("./domain-gen");
 var UUID_PATTERN = /[0-9a-f]{8}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{8}/;
 
 exports["Sslac provides object namespace"] = function(test) {

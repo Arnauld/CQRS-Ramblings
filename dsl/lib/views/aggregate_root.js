@@ -77,6 +77,8 @@ var generate_inherit_views = exports.generate_inherit_views = function(model) {
 var to_aggregate_root_view = exports.to_aggregate_root_view = function(model) {
 	var view = {
 		name           : Utils.model_name(model),
+		model_id_datatype : Utils.model_id_datatype(model),
+		namespace      : "nscrum",
 		inherit_views  : Utils.add_iteration_flags(generate_inherit_views(model), "inherit_view"),
 		variable_name  : Utils.model_variable_name(model),
 		def_views      : Utils.add_iteration_flags(generate_def_views(model), "def_view"),
@@ -92,7 +94,7 @@ exports.transform = function(model, output) {
 		return;
 	}
 	
-    var template = fs.readFileSync(__dirname + "/aggregate_root.template", 'utf8');
+    var template = fs.readFileSync(__dirname + "/aggregate_root_sslac.template", 'utf8');
     var view = to_aggregate_root_view(model);
     var compiled = underscore.template(template);
     output(compiled(view));

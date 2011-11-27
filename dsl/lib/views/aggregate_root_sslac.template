@@ -1,0 +1,111 @@
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//     <%=namespace%>.<%=name%>
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+/**
+ * <%=namespace%>.<%=model_id_datatype%>
+ */
+Sslac.Class("<%=namespace%>.<%=model_id_datatype%>")
+     .Extends("nscrum.Id")
+     .Constructor(function (uuid) {
+        this.Parent(uuid);
+     })
+     ;
+
+<% 
+event_views.forEach(function(event_view) { 
+	var event_handler = event_view.event_handler;
+	if(event_view.model.is_factory()) {
+%>/**
+ *  <%=namespace%>.<%=name%>: <%=event_view.name%> factory event
+ */
+<% } else { 
+%>/**
+ *  <%=namespace%>.<%=name%>: <%=event_view.name%> behavior event
+ */
+<% }
+%>Sslac.Class("<%=namespace%>.<%=event_view.name%>")
+     .Extends("nscrum.Event")
+     .Constructor(function (<%=event_view.field_names().join(",")%>) {
+        this.Parent("<%=namespace%>.<%=event_view.name%>", {
+        <% event_view.fields.forEach(function (field) { 
+          %>    <%=field.name%> : <%=field.name%><% if(!field.last_field) {%>,<%}%>
+        <% }); %>});
+     })
+     <% event_view.fields.forEach(function (field) { %>
+     .Method("<%=field.name%>", function () {
+        return this.data.<%=field.name%>;
+     })<% }); %>
+     ;
+
+/**
+ * <%=namespace%>.<%=name%>: <%=event_view.name%> event handler
+ */
+Sslac.Function("<%=namespace%>.<%=name%>Handler.<%=namespace%>_<%=event_view.name%>", function(event) {
+        <%  event_handler.field_assignments.forEach(function(assignment) {
+            if(assignment.on_identifier) {
+      %>this.assign_id(event.<%=assignment.event_field.name%>());
+        <%  }
+        	else {
+      %>this.data.<%=assignment.field.name%> = event.<%=assignment.event_field.name%>();
+      <%    }
+        }); %>
+     })
+     ;
+
+<% }); %>
+
+/**
+ * <%=namespace%>.<%=name%>: entity / aggregate root
+ */
+Sslac.Class("<%=namespace%>.<%=name%>")
+     .Extends("nscrum.AggregateRoot")
+     .Constructor(function Constructor() {
+        this.Parent();
+     })
+     .Method("handler_ns", function() { 
+         return "<%=namespace%>.<%=name%>Handler"; 
+     })<%
+     field_views.forEach(function(field_view) { %>
+     /**
+      * Field accessor method: <%=field_view.field_name%>
+      */
+     .Method("<%=field_view.field_name%>", function() {
+         return this.data.<%=field_view.field_name%>;
+     })<% }); %><% 
+     def_views.forEach(function(def_view) { %>
+     /**
+      * Behavior method: <%=def_view.method_name%>
+      */
+     .Method("<%=def_view.method_name%>", function(<%=def_view.argument_names().join(", ")%>) {
+        this.apply_event(new <%=namespace%>.<%=def_view.event_view.name%>(this.aggregate_id()<%
+        if(def_view.argument_names().length>0) {
+        %>, <%=def_view.argument_names().join(", ")%><% } %>));
+     })<% }); %><%
+     factory_views.forEach(function(factory_view) { %>
+     /**
+      * Factory method
+      */
+     .Static("create", function(<%=factory_view.event_view.field_names().join(", ")%>) {
+        var <%=variable_name%> = new <%=namespace%>.<%=name%> ();
+    	<%=variable_name%>.apply_event(new <%=namespace%>.<%=factory_view.event_view.name%>(<%=factory_view.event_view.field_names().join(", ")%>));
+    	return <%=variable_name%>;
+     })
+     <% }); 
+   %>.Static("load_from_history", function(event_stream) {
+        var <%=variable_name%> = new <%=namespace%>.<%=name%> ();
+        <%=variable_name%>.load_from_history (event_stream);
+        return <%=variable_name%>;
+     })
+     ;
+
+/**
+ * <%=namespace%>.<%=name%>Repository
+ */
+Sslac.Class("<%=namespace%>.<%=name%>Repository")
+     .Extends("nscrum.Repository")
+     .Constructor(function (event_store) {
+        this.Parent(event_store, "<%=namespace%>.<%=name%>");
+     })
+     ;
