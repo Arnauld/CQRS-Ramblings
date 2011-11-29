@@ -21,21 +21,42 @@ Sslac.Class("nscrum.UserId")
 Sslac.Class("nscrum.UserCreatedEvent")
      .Extends("nscrum.Event")
      .Constructor(function (user_id,login,password) {
-        this.Parent("nscrum.UserCreatedEvent", {
-            user_id : user_id,
-            login : login,
-            password : password
-        });
+     	if(arguments.length == 0) {
+     		// deserialization case, data is directly injected
+     		this.Parent("nscrum.UserCreatedEvent");
+     	}
+     	else if(arguments.length == 3) {
+	        this.Parent("nscrum.UserCreatedEvent", {
+	            user_id :  user_id.uuid() /*unwrap uuid for serialization*/ ,
+	            login :  login ,
+	            password :  password 
+	        });
+	    }
+	    else {
+	    	throw nscrum.InvalidNumberOfArguments("Expected: " + 3 + " got: " + arguments.length);
+	    }
+     })
+     .Method("check_data", function() {
+     	if(typeof this.data.user_id === "undefined") {
+	  		throw nscrum.MissingData("Field user_id is undefined");
+	    }
+	    if(typeof this.data.login === "undefined") {
+	  		throw nscrum.MissingData("Field login is undefined");
+	    }
+	    if(typeof this.data.password === "undefined") {
+	  		throw nscrum.MissingData("Field password is undefined");
+	    }
+	    
      })
      
      .Method("user_id", function () {
-        return this.data.user_id;
+        return new nscrum.UserId(this.data.user_id); /*rewrap uuid*/
      })
      .Method("login", function () {
-        return this.data.login;
+        return this.data.login; 
      })
      .Method("password", function () {
-        return this.data.password;
+        return this.data.password; 
      })
      ;
 
@@ -55,17 +76,35 @@ Sslac.Function("nscrum.UserHandler.nscrum_UserCreatedEvent", function(event) {
 Sslac.Class("nscrum.UserLoginChangedEvent")
      .Extends("nscrum.Event")
      .Constructor(function (user_id,new_login) {
-        this.Parent("nscrum.UserLoginChangedEvent", {
-            user_id : user_id,
-            new_login : new_login
-        });
+     	if(arguments.length == 0) {
+     		// deserialization case, data is directly injected
+     		this.Parent("nscrum.UserLoginChangedEvent");
+     	}
+     	else if(arguments.length == 2) {
+	        this.Parent("nscrum.UserLoginChangedEvent", {
+	            user_id :  user_id.uuid() /*unwrap uuid for serialization*/ ,
+	            new_login :  new_login 
+	        });
+	    }
+	    else {
+	    	throw nscrum.InvalidNumberOfArguments("Expected: " + 2 + " got: " + arguments.length);
+	    }
+     })
+     .Method("check_data", function() {
+     	if(typeof this.data.user_id === "undefined") {
+	  		throw nscrum.MissingData("Field user_id is undefined");
+	    }
+	    if(typeof this.data.new_login === "undefined") {
+	  		throw nscrum.MissingData("Field new_login is undefined");
+	    }
+	    
      })
      
      .Method("user_id", function () {
-        return this.data.user_id;
+        return new nscrum.UserId(this.data.user_id); /*rewrap uuid*/
      })
      .Method("new_login", function () {
-        return this.data.new_login;
+        return this.data.new_login; 
      })
      ;
 
@@ -85,13 +124,28 @@ Sslac.Function("nscrum.UserHandler.nscrum_UserLoginChangedEvent", function(event
 Sslac.Class("nscrum.UserActivatedEvent")
      .Extends("nscrum.Event")
      .Constructor(function (user_id) {
-        this.Parent("nscrum.UserActivatedEvent", {
-            user_id : user_id
-        });
+     	if(arguments.length == 0) {
+     		// deserialization case, data is directly injected
+     		this.Parent("nscrum.UserActivatedEvent");
+     	}
+     	else if(arguments.length == 1) {
+	        this.Parent("nscrum.UserActivatedEvent", {
+	            user_id :  user_id.uuid() /*unwrap uuid for serialization*/ 
+	        });
+	    }
+	    else {
+	    	throw nscrum.InvalidNumberOfArguments("Expected: " + 1 + " got: " + arguments.length);
+	    }
+     })
+     .Method("check_data", function() {
+     	if(typeof this.data.user_id === "undefined") {
+	  		throw nscrum.MissingData("Field user_id is undefined");
+	    }
+	    
      })
      
      .Method("user_id", function () {
-        return this.data.user_id;
+        return new nscrum.UserId(this.data.user_id); /*rewrap uuid*/
      })
      ;
 
@@ -110,13 +164,28 @@ Sslac.Function("nscrum.UserHandler.nscrum_UserActivatedEvent", function(event) {
 Sslac.Class("nscrum.UserDeactivatedEvent")
      .Extends("nscrum.Event")
      .Constructor(function (user_id) {
-        this.Parent("nscrum.UserDeactivatedEvent", {
-            user_id : user_id
-        });
+     	if(arguments.length == 0) {
+     		// deserialization case, data is directly injected
+     		this.Parent("nscrum.UserDeactivatedEvent");
+     	}
+     	else if(arguments.length == 1) {
+	        this.Parent("nscrum.UserDeactivatedEvent", {
+	            user_id :  user_id.uuid() /*unwrap uuid for serialization*/ 
+	        });
+	    }
+	    else {
+	    	throw nscrum.InvalidNumberOfArguments("Expected: " + 1 + " got: " + arguments.length);
+	    }
+     })
+     .Method("check_data", function() {
+     	if(typeof this.data.user_id === "undefined") {
+	  		throw nscrum.MissingData("Field user_id is undefined");
+	    }
+	    
      })
      
      .Method("user_id", function () {
-        return this.data.user_id;
+        return new nscrum.UserId(this.data.user_id); /*rewrap uuid*/
      })
      ;
 
@@ -139,6 +208,20 @@ Sslac.Class("nscrum.User")
      .Constructor(function Constructor() {
         this.Parent();
      })
+     .Static("load_from_history", function(event_stream) {
+        var user = new nscrum.User ();
+        user.load_from_history (event_stream);
+        return user;
+     })
+     /**
+      * Entity ns
+      */
+     .Method("entity_ns", function() { 
+         return "nscrum.User"; 
+     })
+     /**
+      * Event handler ns (used to find event specific handler through reflection)
+      */
      .Method("handler_ns", function() { 
          return "nscrum.UserHandler"; 
      })
@@ -180,11 +263,7 @@ Sslac.Class("nscrum.User")
     	user.apply_event(new nscrum.UserCreatedEvent(user_id, login, password));
     	return user;
      })
-     .Static("load_from_history", function(event_stream) {
-        var user = new nscrum.User ();
-        user.load_from_history (event_stream);
-        return user;
-     })
+     
      ;
 
 /**
@@ -192,8 +271,19 @@ Sslac.Class("nscrum.User")
  */
 Sslac.Class("nscrum.UserRepository")
      .Extends("nscrum.Repository")
-     .Constructor(function (event_store) {
-        this.Parent(event_store, "nscrum.User");
+     .Constructor(function (event_store, notification_bus) {
+        this.Parent("nscrum.User", "nscrum.UserId", event_store, notification_bus);
+     })
+     .Method("asDefault", function() {
+        nscrum.Environment.nscrum_UserRepository = this;
+        return this;
+     })
+     .Static("getDefault", function() {
+     	var instance = nscrum.Environment.nscrum_UserRepository;
+     	if(!instance) {
+     		throw nscrum.NotBoundInEnvironment("nscrum.UserRepository");
+     	}
+        return instance;
      })
      ;
 
@@ -216,22 +306,43 @@ Sslac.Class("nscrum.ProjectId")
  */
 Sslac.Class("nscrum.ProjectCreatedEvent")
      .Extends("nscrum.Event")
-     .Constructor(function (project_id,project_name,owner) {
-        this.Parent("nscrum.ProjectCreatedEvent", {
-            project_id : project_id,
-            project_name : project_name,
-            owner : owner
-        });
+     .Constructor(function (project_id,project_name,owner_id) {
+     	if(arguments.length == 0) {
+     		// deserialization case, data is directly injected
+     		this.Parent("nscrum.ProjectCreatedEvent");
+     	}
+     	else if(arguments.length == 3) {
+	        this.Parent("nscrum.ProjectCreatedEvent", {
+	            project_id :  project_id.uuid() /*unwrap uuid for serialization*/ ,
+	            project_name :  project_name ,
+	            owner_id :  owner_id.uuid() /*unwrap uuid for serialization*/ 
+	        });
+	    }
+	    else {
+	    	throw nscrum.InvalidNumberOfArguments("Expected: " + 3 + " got: " + arguments.length);
+	    }
+     })
+     .Method("check_data", function() {
+     	if(typeof this.data.project_id === "undefined") {
+	  		throw nscrum.MissingData("Field project_id is undefined");
+	    }
+	    if(typeof this.data.project_name === "undefined") {
+	  		throw nscrum.MissingData("Field project_name is undefined");
+	    }
+	    if(typeof this.data.owner_id === "undefined") {
+	  		throw nscrum.MissingData("Field owner_id is undefined");
+	    }
+	    
      })
      
      .Method("project_id", function () {
-        return this.data.project_id;
+        return new nscrum.ProjectId(this.data.project_id); /*rewrap uuid*/
      })
      .Method("project_name", function () {
-        return this.data.project_name;
+        return this.data.project_name; 
      })
-     .Method("owner", function () {
-        return this.data.owner;
+     .Method("owner_id", function () {
+        return new nscrum.UserId(this.data.owner_id); /*rewrap uuid*/
      })
      ;
 
@@ -241,7 +352,7 @@ Sslac.Class("nscrum.ProjectCreatedEvent")
 Sslac.Function("nscrum.ProjectHandler.nscrum_ProjectCreatedEvent", function(event) {
         this.assign_id(event.project_id());
         this.data.name = event.project_name();
-      this.data.owner = event.owner();
+      this.data.owner_id = event.owner_id();
       
      })
      ;
@@ -252,17 +363,35 @@ Sslac.Function("nscrum.ProjectHandler.nscrum_ProjectCreatedEvent", function(even
 Sslac.Class("nscrum.ProjectNameChangedEvent")
      .Extends("nscrum.Event")
      .Constructor(function (project_id,new_name) {
-        this.Parent("nscrum.ProjectNameChangedEvent", {
-            project_id : project_id,
-            new_name : new_name
-        });
+     	if(arguments.length == 0) {
+     		// deserialization case, data is directly injected
+     		this.Parent("nscrum.ProjectNameChangedEvent");
+     	}
+     	else if(arguments.length == 2) {
+	        this.Parent("nscrum.ProjectNameChangedEvent", {
+	            project_id :  project_id.uuid() /*unwrap uuid for serialization*/ ,
+	            new_name :  new_name 
+	        });
+	    }
+	    else {
+	    	throw nscrum.InvalidNumberOfArguments("Expected: " + 2 + " got: " + arguments.length);
+	    }
+     })
+     .Method("check_data", function() {
+     	if(typeof this.data.project_id === "undefined") {
+	  		throw nscrum.MissingData("Field project_id is undefined");
+	    }
+	    if(typeof this.data.new_name === "undefined") {
+	  		throw nscrum.MissingData("Field new_name is undefined");
+	    }
+	    
      })
      
      .Method("project_id", function () {
-        return this.data.project_id;
+        return new nscrum.ProjectId(this.data.project_id); /*rewrap uuid*/
      })
      .Method("new_name", function () {
-        return this.data.new_name;
+        return this.data.new_name; 
      })
      ;
 
@@ -282,21 +411,42 @@ Sslac.Function("nscrum.ProjectHandler.nscrum_ProjectNameChangedEvent", function(
 Sslac.Class("nscrum.ProjectMemberAddedEvent")
      .Extends("nscrum.Event")
      .Constructor(function (project_id,user_id,role) {
-        this.Parent("nscrum.ProjectMemberAddedEvent", {
-            project_id : project_id,
-            user_id : user_id,
-            role : role
-        });
+     	if(arguments.length == 0) {
+     		// deserialization case, data is directly injected
+     		this.Parent("nscrum.ProjectMemberAddedEvent");
+     	}
+     	else if(arguments.length == 3) {
+	        this.Parent("nscrum.ProjectMemberAddedEvent", {
+	            project_id :  project_id.uuid() /*unwrap uuid for serialization*/ ,
+	            user_id :  user_id.uuid() /*unwrap uuid for serialization*/ ,
+	            role :  role 
+	        });
+	    }
+	    else {
+	    	throw nscrum.InvalidNumberOfArguments("Expected: " + 3 + " got: " + arguments.length);
+	    }
+     })
+     .Method("check_data", function() {
+     	if(typeof this.data.project_id === "undefined") {
+	  		throw nscrum.MissingData("Field project_id is undefined");
+	    }
+	    if(typeof this.data.user_id === "undefined") {
+	  		throw nscrum.MissingData("Field user_id is undefined");
+	    }
+	    if(typeof this.data.role === "undefined") {
+	  		throw nscrum.MissingData("Field role is undefined");
+	    }
+	    
      })
      
      .Method("project_id", function () {
-        return this.data.project_id;
+        return new nscrum.ProjectId(this.data.project_id); /*rewrap uuid*/
      })
      .Method("user_id", function () {
-        return this.data.user_id;
+        return new nscrum.UserId(this.data.user_id); /*rewrap uuid*/
      })
      .Method("role", function () {
-        return this.data.role;
+        return this.data.role; 
      })
      ;
 
@@ -315,21 +465,42 @@ Sslac.Function("nscrum.ProjectHandler.nscrum_ProjectMemberAddedEvent", function(
 Sslac.Class("nscrum.ProjectMemberRemovedEvent")
      .Extends("nscrum.Event")
      .Constructor(function (project_id,user_id,role) {
-        this.Parent("nscrum.ProjectMemberRemovedEvent", {
-            project_id : project_id,
-            user_id : user_id,
-            role : role
-        });
+     	if(arguments.length == 0) {
+     		// deserialization case, data is directly injected
+     		this.Parent("nscrum.ProjectMemberRemovedEvent");
+     	}
+     	else if(arguments.length == 3) {
+	        this.Parent("nscrum.ProjectMemberRemovedEvent", {
+	            project_id :  project_id.uuid() /*unwrap uuid for serialization*/ ,
+	            user_id :  user_id.uuid() /*unwrap uuid for serialization*/ ,
+	            role :  role 
+	        });
+	    }
+	    else {
+	    	throw nscrum.InvalidNumberOfArguments("Expected: " + 3 + " got: " + arguments.length);
+	    }
+     })
+     .Method("check_data", function() {
+     	if(typeof this.data.project_id === "undefined") {
+	  		throw nscrum.MissingData("Field project_id is undefined");
+	    }
+	    if(typeof this.data.user_id === "undefined") {
+	  		throw nscrum.MissingData("Field user_id is undefined");
+	    }
+	    if(typeof this.data.role === "undefined") {
+	  		throw nscrum.MissingData("Field role is undefined");
+	    }
+	    
      })
      
      .Method("project_id", function () {
-        return this.data.project_id;
+        return new nscrum.ProjectId(this.data.project_id); /*rewrap uuid*/
      })
      .Method("user_id", function () {
-        return this.data.user_id;
+        return new nscrum.UserId(this.data.user_id); /*rewrap uuid*/
      })
      .Method("role", function () {
-        return this.data.role;
+        return this.data.role; 
      })
      ;
 
@@ -348,25 +519,49 @@ Sslac.Function("nscrum.ProjectHandler.nscrum_ProjectMemberRemovedEvent", functio
 Sslac.Class("nscrum.ProjectMemberFiredEvent")
      .Extends("nscrum.Event")
      .Constructor(function (project_id,firer,user_id,role) {
-        this.Parent("nscrum.ProjectMemberFiredEvent", {
-            project_id : project_id,
-            firer : firer,
-            user_id : user_id,
-            role : role
-        });
+     	if(arguments.length == 0) {
+     		// deserialization case, data is directly injected
+     		this.Parent("nscrum.ProjectMemberFiredEvent");
+     	}
+     	else if(arguments.length == 4) {
+	        this.Parent("nscrum.ProjectMemberFiredEvent", {
+	            project_id :  project_id.uuid() /*unwrap uuid for serialization*/ ,
+	            firer :  firer ,
+	            user_id :  user_id.uuid() /*unwrap uuid for serialization*/ ,
+	            role :  role 
+	        });
+	    }
+	    else {
+	    	throw nscrum.InvalidNumberOfArguments("Expected: " + 4 + " got: " + arguments.length);
+	    }
+     })
+     .Method("check_data", function() {
+     	if(typeof this.data.project_id === "undefined") {
+	  		throw nscrum.MissingData("Field project_id is undefined");
+	    }
+	    if(typeof this.data.firer === "undefined") {
+	  		throw nscrum.MissingData("Field firer is undefined");
+	    }
+	    if(typeof this.data.user_id === "undefined") {
+	  		throw nscrum.MissingData("Field user_id is undefined");
+	    }
+	    if(typeof this.data.role === "undefined") {
+	  		throw nscrum.MissingData("Field role is undefined");
+	    }
+	    
      })
      
      .Method("project_id", function () {
-        return this.data.project_id;
+        return new nscrum.ProjectId(this.data.project_id); /*rewrap uuid*/
      })
      .Method("firer", function () {
-        return this.data.firer;
+        return this.data.firer; 
      })
      .Method("user_id", function () {
-        return this.data.user_id;
+        return new nscrum.UserId(this.data.user_id); /*rewrap uuid*/
      })
      .Method("role", function () {
-        return this.data.role;
+        return this.data.role; 
      })
      ;
 
@@ -385,21 +580,42 @@ Sslac.Function("nscrum.ProjectHandler.nscrum_ProjectMemberFiredEvent", function(
 Sslac.Class("nscrum.ProjectMemberRoleChangedEvent")
      .Extends("nscrum.Event")
      .Constructor(function (project_id,user_id,role) {
-        this.Parent("nscrum.ProjectMemberRoleChangedEvent", {
-            project_id : project_id,
-            user_id : user_id,
-            role : role
-        });
+     	if(arguments.length == 0) {
+     		// deserialization case, data is directly injected
+     		this.Parent("nscrum.ProjectMemberRoleChangedEvent");
+     	}
+     	else if(arguments.length == 3) {
+	        this.Parent("nscrum.ProjectMemberRoleChangedEvent", {
+	            project_id :  project_id.uuid() /*unwrap uuid for serialization*/ ,
+	            user_id :  user_id.uuid() /*unwrap uuid for serialization*/ ,
+	            role :  role 
+	        });
+	    }
+	    else {
+	    	throw nscrum.InvalidNumberOfArguments("Expected: " + 3 + " got: " + arguments.length);
+	    }
+     })
+     .Method("check_data", function() {
+     	if(typeof this.data.project_id === "undefined") {
+	  		throw nscrum.MissingData("Field project_id is undefined");
+	    }
+	    if(typeof this.data.user_id === "undefined") {
+	  		throw nscrum.MissingData("Field user_id is undefined");
+	    }
+	    if(typeof this.data.role === "undefined") {
+	  		throw nscrum.MissingData("Field role is undefined");
+	    }
+	    
      })
      
      .Method("project_id", function () {
-        return this.data.project_id;
+        return new nscrum.ProjectId(this.data.project_id); /*rewrap uuid*/
      })
      .Method("user_id", function () {
-        return this.data.user_id;
+        return new nscrum.UserId(this.data.user_id); /*rewrap uuid*/
      })
      .Method("role", function () {
-        return this.data.role;
+        return this.data.role; 
      })
      ;
 
@@ -418,17 +634,35 @@ Sslac.Function("nscrum.ProjectHandler.nscrum_ProjectMemberRoleChangedEvent", fun
 Sslac.Class("nscrum.ProjectBacklogItemAddedEvent")
      .Extends("nscrum.Event")
      .Constructor(function (project_id,story_id) {
-        this.Parent("nscrum.ProjectBacklogItemAddedEvent", {
-            project_id : project_id,
-            story_id : story_id
-        });
+     	if(arguments.length == 0) {
+     		// deserialization case, data is directly injected
+     		this.Parent("nscrum.ProjectBacklogItemAddedEvent");
+     	}
+     	else if(arguments.length == 2) {
+	        this.Parent("nscrum.ProjectBacklogItemAddedEvent", {
+	            project_id :  project_id.uuid() /*unwrap uuid for serialization*/ ,
+	            story_id :  story_id.uuid() /*unwrap uuid for serialization*/ 
+	        });
+	    }
+	    else {
+	    	throw nscrum.InvalidNumberOfArguments("Expected: " + 2 + " got: " + arguments.length);
+	    }
+     })
+     .Method("check_data", function() {
+     	if(typeof this.data.project_id === "undefined") {
+	  		throw nscrum.MissingData("Field project_id is undefined");
+	    }
+	    if(typeof this.data.story_id === "undefined") {
+	  		throw nscrum.MissingData("Field story_id is undefined");
+	    }
+	    
      })
      
      .Method("project_id", function () {
-        return this.data.project_id;
+        return new nscrum.ProjectId(this.data.project_id); /*rewrap uuid*/
      })
      .Method("story_id", function () {
-        return this.data.story_id;
+        return new nscrum.StoryId(this.data.story_id); /*rewrap uuid*/
      })
      ;
 
@@ -451,6 +685,20 @@ Sslac.Class("nscrum.Project")
      .Constructor(function Constructor() {
         this.Parent();
      })
+     .Static("load_from_history", function(event_stream) {
+        var project = new nscrum.Project ();
+        project.load_from_history (event_stream);
+        return project;
+     })
+     /**
+      * Entity ns
+      */
+     .Method("entity_ns", function() { 
+         return "nscrum.Project"; 
+     })
+     /**
+      * Event handler ns (used to find event specific handler through reflection)
+      */
      .Method("handler_ns", function() { 
          return "nscrum.ProjectHandler"; 
      })
@@ -461,10 +709,10 @@ Sslac.Class("nscrum.Project")
          return this.data.name;
      })
      /**
-      * Field accessor method: owner
+      * Field accessor method: owner_id
       */
-     .Method("owner", function() {
-         return this.data.owner;
+     .Method("owner_id", function() {
+         return this.data.owner_id;
      })
      /**
       * Behavior method: change_name
@@ -505,16 +753,12 @@ Sslac.Class("nscrum.Project")
      /**
       * Factory method
       */
-     .Static("create", function(project_id, project_name, owner) {
+     .Static("create", function(project_id, project_name, owner_id) {
         var project = new nscrum.Project ();
-    	project.apply_event(new nscrum.ProjectCreatedEvent(project_id, project_name, owner));
+    	project.apply_event(new nscrum.ProjectCreatedEvent(project_id, project_name, owner_id));
     	return project;
      })
-     .Static("load_from_history", function(event_stream) {
-        var project = new nscrum.Project ();
-        project.load_from_history (event_stream);
-        return project;
-     })
+     
      ;
 
 /**
@@ -522,8 +766,19 @@ Sslac.Class("nscrum.Project")
  */
 Sslac.Class("nscrum.ProjectRepository")
      .Extends("nscrum.Repository")
-     .Constructor(function (event_store) {
-        this.Parent(event_store, "nscrum.Project");
+     .Constructor(function (event_store, notification_bus) {
+        this.Parent("nscrum.Project", "nscrum.ProjectId", event_store, notification_bus);
+     })
+     .Method("asDefault", function() {
+        nscrum.Environment.nscrum_ProjectRepository = this;
+        return this;
+     })
+     .Static("getDefault", function() {
+     	var instance = nscrum.Environment.nscrum_ProjectRepository;
+     	if(!instance) {
+     		throw nscrum.NotBoundInEnvironment("nscrum.ProjectRepository");
+     	}
+        return instance;
      })
      ;
 
@@ -547,25 +802,49 @@ Sslac.Class("nscrum.StoryId")
 Sslac.Class("nscrum.StoryCreatedEvent")
      .Extends("nscrum.Event")
      .Constructor(function (story_id,project_id,story_title,story_description) {
-        this.Parent("nscrum.StoryCreatedEvent", {
-            story_id : story_id,
-            project_id : project_id,
-            story_title : story_title,
-            story_description : story_description
-        });
+     	if(arguments.length == 0) {
+     		// deserialization case, data is directly injected
+     		this.Parent("nscrum.StoryCreatedEvent");
+     	}
+     	else if(arguments.length == 4) {
+	        this.Parent("nscrum.StoryCreatedEvent", {
+	            story_id :  story_id.uuid() /*unwrap uuid for serialization*/ ,
+	            project_id :  project_id.uuid() /*unwrap uuid for serialization*/ ,
+	            story_title :  story_title ,
+	            story_description :  story_description 
+	        });
+	    }
+	    else {
+	    	throw nscrum.InvalidNumberOfArguments("Expected: " + 4 + " got: " + arguments.length);
+	    }
+     })
+     .Method("check_data", function() {
+     	if(typeof this.data.story_id === "undefined") {
+	  		throw nscrum.MissingData("Field story_id is undefined");
+	    }
+	    if(typeof this.data.project_id === "undefined") {
+	  		throw nscrum.MissingData("Field project_id is undefined");
+	    }
+	    if(typeof this.data.story_title === "undefined") {
+	  		throw nscrum.MissingData("Field story_title is undefined");
+	    }
+	    if(typeof this.data.story_description === "undefined") {
+	  		throw nscrum.MissingData("Field story_description is undefined");
+	    }
+	    
      })
      
      .Method("story_id", function () {
-        return this.data.story_id;
+        return new nscrum.StoryId(this.data.story_id); /*rewrap uuid*/
      })
      .Method("project_id", function () {
-        return this.data.project_id;
+        return new nscrum.ProjectId(this.data.project_id); /*rewrap uuid*/
      })
      .Method("story_title", function () {
-        return this.data.story_title;
+        return this.data.story_title; 
      })
      .Method("story_description", function () {
-        return this.data.story_description;
+        return this.data.story_description; 
      })
      ;
 
@@ -587,17 +866,35 @@ Sslac.Function("nscrum.StoryHandler.nscrum_StoryCreatedEvent", function(event) {
 Sslac.Class("nscrum.StoryComplexityChangedEvent")
      .Extends("nscrum.Event")
      .Constructor(function (story_id,complexity) {
-        this.Parent("nscrum.StoryComplexityChangedEvent", {
-            story_id : story_id,
-            complexity : complexity
-        });
+     	if(arguments.length == 0) {
+     		// deserialization case, data is directly injected
+     		this.Parent("nscrum.StoryComplexityChangedEvent");
+     	}
+     	else if(arguments.length == 2) {
+	        this.Parent("nscrum.StoryComplexityChangedEvent", {
+	            story_id :  story_id.uuid() /*unwrap uuid for serialization*/ ,
+	            complexity :  complexity 
+	        });
+	    }
+	    else {
+	    	throw nscrum.InvalidNumberOfArguments("Expected: " + 2 + " got: " + arguments.length);
+	    }
+     })
+     .Method("check_data", function() {
+     	if(typeof this.data.story_id === "undefined") {
+	  		throw nscrum.MissingData("Field story_id is undefined");
+	    }
+	    if(typeof this.data.complexity === "undefined") {
+	  		throw nscrum.MissingData("Field complexity is undefined");
+	    }
+	    
      })
      
      .Method("story_id", function () {
-        return this.data.story_id;
+        return new nscrum.StoryId(this.data.story_id); /*rewrap uuid*/
      })
      .Method("complexity", function () {
-        return this.data.complexity;
+        return this.data.complexity; 
      })
      ;
 
@@ -617,17 +914,35 @@ Sslac.Function("nscrum.StoryHandler.nscrum_StoryComplexityChangedEvent", functio
 Sslac.Class("nscrum.StoryBusinessValueChangedEvent")
      .Extends("nscrum.Event")
      .Constructor(function (story_id,business_value) {
-        this.Parent("nscrum.StoryBusinessValueChangedEvent", {
-            story_id : story_id,
-            business_value : business_value
-        });
+     	if(arguments.length == 0) {
+     		// deserialization case, data is directly injected
+     		this.Parent("nscrum.StoryBusinessValueChangedEvent");
+     	}
+     	else if(arguments.length == 2) {
+	        this.Parent("nscrum.StoryBusinessValueChangedEvent", {
+	            story_id :  story_id.uuid() /*unwrap uuid for serialization*/ ,
+	            business_value :  business_value 
+	        });
+	    }
+	    else {
+	    	throw nscrum.InvalidNumberOfArguments("Expected: " + 2 + " got: " + arguments.length);
+	    }
+     })
+     .Method("check_data", function() {
+     	if(typeof this.data.story_id === "undefined") {
+	  		throw nscrum.MissingData("Field story_id is undefined");
+	    }
+	    if(typeof this.data.business_value === "undefined") {
+	  		throw nscrum.MissingData("Field business_value is undefined");
+	    }
+	    
      })
      
      .Method("story_id", function () {
-        return this.data.story_id;
+        return new nscrum.StoryId(this.data.story_id); /*rewrap uuid*/
      })
      .Method("business_value", function () {
-        return this.data.business_value;
+        return this.data.business_value; 
      })
      ;
 
@@ -647,17 +962,35 @@ Sslac.Function("nscrum.StoryHandler.nscrum_StoryBusinessValueChangedEvent", func
 Sslac.Class("nscrum.StoryTitleChangedEvent")
      .Extends("nscrum.Event")
      .Constructor(function (story_id,title) {
-        this.Parent("nscrum.StoryTitleChangedEvent", {
-            story_id : story_id,
-            title : title
-        });
+     	if(arguments.length == 0) {
+     		// deserialization case, data is directly injected
+     		this.Parent("nscrum.StoryTitleChangedEvent");
+     	}
+     	else if(arguments.length == 2) {
+	        this.Parent("nscrum.StoryTitleChangedEvent", {
+	            story_id :  story_id.uuid() /*unwrap uuid for serialization*/ ,
+	            title :  title 
+	        });
+	    }
+	    else {
+	    	throw nscrum.InvalidNumberOfArguments("Expected: " + 2 + " got: " + arguments.length);
+	    }
+     })
+     .Method("check_data", function() {
+     	if(typeof this.data.story_id === "undefined") {
+	  		throw nscrum.MissingData("Field story_id is undefined");
+	    }
+	    if(typeof this.data.title === "undefined") {
+	  		throw nscrum.MissingData("Field title is undefined");
+	    }
+	    
      })
      
      .Method("story_id", function () {
-        return this.data.story_id;
+        return new nscrum.StoryId(this.data.story_id); /*rewrap uuid*/
      })
      .Method("title", function () {
-        return this.data.title;
+        return this.data.title; 
      })
      ;
 
@@ -677,17 +1010,35 @@ Sslac.Function("nscrum.StoryHandler.nscrum_StoryTitleChangedEvent", function(eve
 Sslac.Class("nscrum.StoryDescriptionChangedEvent")
      .Extends("nscrum.Event")
      .Constructor(function (story_id,description) {
-        this.Parent("nscrum.StoryDescriptionChangedEvent", {
-            story_id : story_id,
-            description : description
-        });
+     	if(arguments.length == 0) {
+     		// deserialization case, data is directly injected
+     		this.Parent("nscrum.StoryDescriptionChangedEvent");
+     	}
+     	else if(arguments.length == 2) {
+	        this.Parent("nscrum.StoryDescriptionChangedEvent", {
+	            story_id :  story_id.uuid() /*unwrap uuid for serialization*/ ,
+	            description :  description 
+	        });
+	    }
+	    else {
+	    	throw nscrum.InvalidNumberOfArguments("Expected: " + 2 + " got: " + arguments.length);
+	    }
+     })
+     .Method("check_data", function() {
+     	if(typeof this.data.story_id === "undefined") {
+	  		throw nscrum.MissingData("Field story_id is undefined");
+	    }
+	    if(typeof this.data.description === "undefined") {
+	  		throw nscrum.MissingData("Field description is undefined");
+	    }
+	    
      })
      
      .Method("story_id", function () {
-        return this.data.story_id;
+        return new nscrum.StoryId(this.data.story_id); /*rewrap uuid*/
      })
      .Method("description", function () {
-        return this.data.description;
+        return this.data.description; 
      })
      ;
 
@@ -711,6 +1062,20 @@ Sslac.Class("nscrum.Story")
      .Constructor(function Constructor() {
         this.Parent();
      })
+     .Static("load_from_history", function(event_stream) {
+        var story = new nscrum.Story ();
+        story.load_from_history (event_stream);
+        return story;
+     })
+     /**
+      * Entity ns
+      */
+     .Method("entity_ns", function() { 
+         return "nscrum.Story"; 
+     })
+     /**
+      * Event handler ns (used to find event specific handler through reflection)
+      */
      .Method("handler_ns", function() { 
          return "nscrum.StoryHandler"; 
      })
@@ -776,11 +1141,7 @@ Sslac.Class("nscrum.Story")
     	story.apply_event(new nscrum.StoryCreatedEvent(story_id, project_id, story_title, story_description));
     	return story;
      })
-     .Static("load_from_history", function(event_stream) {
-        var story = new nscrum.Story ();
-        story.load_from_history (event_stream);
-        return story;
-     })
+     
      ;
 
 /**
@@ -788,8 +1149,19 @@ Sslac.Class("nscrum.Story")
  */
 Sslac.Class("nscrum.StoryRepository")
      .Extends("nscrum.Repository")
-     .Constructor(function (event_store) {
-        this.Parent(event_store, "nscrum.Story");
+     .Constructor(function (event_store, notification_bus) {
+        this.Parent("nscrum.Story", "nscrum.StoryId", event_store, notification_bus);
+     })
+     .Method("asDefault", function() {
+        nscrum.Environment.nscrum_StoryRepository = this;
+        return this;
+     })
+     .Static("getDefault", function() {
+     	var instance = nscrum.Environment.nscrum_StoryRepository;
+     	if(!instance) {
+     		throw nscrum.NotBoundInEnvironment("nscrum.StoryRepository");
+     	}
+        return instance;
      })
      ;
 
@@ -813,21 +1185,42 @@ Sslac.Class("nscrum.SprintId")
 Sslac.Class("nscrum.SprintCreatedEvent")
      .Extends("nscrum.Event")
      .Constructor(function (sprint_id,project_id,sprint_objectives) {
-        this.Parent("nscrum.SprintCreatedEvent", {
-            sprint_id : sprint_id,
-            project_id : project_id,
-            sprint_objectives : sprint_objectives
-        });
+     	if(arguments.length == 0) {
+     		// deserialization case, data is directly injected
+     		this.Parent("nscrum.SprintCreatedEvent");
+     	}
+     	else if(arguments.length == 3) {
+	        this.Parent("nscrum.SprintCreatedEvent", {
+	            sprint_id :  sprint_id.uuid() /*unwrap uuid for serialization*/ ,
+	            project_id :  project_id.uuid() /*unwrap uuid for serialization*/ ,
+	            sprint_objectives :  sprint_objectives 
+	        });
+	    }
+	    else {
+	    	throw nscrum.InvalidNumberOfArguments("Expected: " + 3 + " got: " + arguments.length);
+	    }
+     })
+     .Method("check_data", function() {
+     	if(typeof this.data.sprint_id === "undefined") {
+	  		throw nscrum.MissingData("Field sprint_id is undefined");
+	    }
+	    if(typeof this.data.project_id === "undefined") {
+	  		throw nscrum.MissingData("Field project_id is undefined");
+	    }
+	    if(typeof this.data.sprint_objectives === "undefined") {
+	  		throw nscrum.MissingData("Field sprint_objectives is undefined");
+	    }
+	    
      })
      
      .Method("sprint_id", function () {
-        return this.data.sprint_id;
+        return new nscrum.SprintId(this.data.sprint_id); /*rewrap uuid*/
      })
      .Method("project_id", function () {
-        return this.data.project_id;
+        return new nscrum.ProjectId(this.data.project_id); /*rewrap uuid*/
      })
      .Method("sprint_objectives", function () {
-        return this.data.sprint_objectives;
+        return this.data.sprint_objectives; 
      })
      ;
 
@@ -846,17 +1239,35 @@ Sslac.Function("nscrum.SprintHandler.nscrum_SprintCreatedEvent", function(event)
 Sslac.Class("nscrum.SprintRangeDefinedEvent")
      .Extends("nscrum.Event")
      .Constructor(function (sprint_id,date_range) {
-        this.Parent("nscrum.SprintRangeDefinedEvent", {
-            sprint_id : sprint_id,
-            date_range : date_range
-        });
+     	if(arguments.length == 0) {
+     		// deserialization case, data is directly injected
+     		this.Parent("nscrum.SprintRangeDefinedEvent");
+     	}
+     	else if(arguments.length == 2) {
+	        this.Parent("nscrum.SprintRangeDefinedEvent", {
+	            sprint_id :  sprint_id.uuid() /*unwrap uuid for serialization*/ ,
+	            date_range :  date_range 
+	        });
+	    }
+	    else {
+	    	throw nscrum.InvalidNumberOfArguments("Expected: " + 2 + " got: " + arguments.length);
+	    }
+     })
+     .Method("check_data", function() {
+     	if(typeof this.data.sprint_id === "undefined") {
+	  		throw nscrum.MissingData("Field sprint_id is undefined");
+	    }
+	    if(typeof this.data.date_range === "undefined") {
+	  		throw nscrum.MissingData("Field date_range is undefined");
+	    }
+	    
      })
      
      .Method("sprint_id", function () {
-        return this.data.sprint_id;
+        return new nscrum.SprintId(this.data.sprint_id); /*rewrap uuid*/
      })
      .Method("date_range", function () {
-        return this.data.date_range;
+        return this.data.date_range; 
      })
      ;
 
@@ -879,6 +1290,20 @@ Sslac.Class("nscrum.Sprint")
      .Constructor(function Constructor() {
         this.Parent();
      })
+     .Static("load_from_history", function(event_stream) {
+        var sprint = new nscrum.Sprint ();
+        sprint.load_from_history (event_stream);
+        return sprint;
+     })
+     /**
+      * Entity ns
+      */
+     .Method("entity_ns", function() { 
+         return "nscrum.Sprint"; 
+     })
+     /**
+      * Event handler ns (used to find event specific handler through reflection)
+      */
      .Method("handler_ns", function() { 
          return "nscrum.SprintHandler"; 
      })
@@ -896,11 +1321,7 @@ Sslac.Class("nscrum.Sprint")
     	sprint.apply_event(new nscrum.SprintCreatedEvent(sprint_id, project_id, sprint_objectives));
     	return sprint;
      })
-     .Static("load_from_history", function(event_stream) {
-        var sprint = new nscrum.Sprint ();
-        sprint.load_from_history (event_stream);
-        return sprint;
-     })
+     
      ;
 
 /**
@@ -908,8 +1329,19 @@ Sslac.Class("nscrum.Sprint")
  */
 Sslac.Class("nscrum.SprintRepository")
      .Extends("nscrum.Repository")
-     .Constructor(function (event_store) {
-        this.Parent(event_store, "nscrum.Sprint");
+     .Constructor(function (event_store, notification_bus) {
+        this.Parent("nscrum.Sprint", "nscrum.SprintId", event_store, notification_bus);
+     })
+     .Method("asDefault", function() {
+        nscrum.Environment.nscrum_SprintRepository = this;
+        return this;
+     })
+     .Static("getDefault", function() {
+     	var instance = nscrum.Environment.nscrum_SprintRepository;
+     	if(!instance) {
+     		throw nscrum.NotBoundInEnvironment("nscrum.SprintRepository");
+     	}
+        return instance;
      })
      ;
 
@@ -933,25 +1365,49 @@ Sslac.Class("nscrum.TaskId")
 Sslac.Class("nscrum.TaskCreatedEvent")
      .Extends("nscrum.Event")
      .Constructor(function (task_id,project_id,task_title,task_description) {
-        this.Parent("nscrum.TaskCreatedEvent", {
-            task_id : task_id,
-            project_id : project_id,
-            task_title : task_title,
-            task_description : task_description
-        });
+     	if(arguments.length == 0) {
+     		// deserialization case, data is directly injected
+     		this.Parent("nscrum.TaskCreatedEvent");
+     	}
+     	else if(arguments.length == 4) {
+	        this.Parent("nscrum.TaskCreatedEvent", {
+	            task_id :  task_id.uuid() /*unwrap uuid for serialization*/ ,
+	            project_id :  project_id.uuid() /*unwrap uuid for serialization*/ ,
+	            task_title :  task_title ,
+	            task_description :  task_description 
+	        });
+	    }
+	    else {
+	    	throw nscrum.InvalidNumberOfArguments("Expected: " + 4 + " got: " + arguments.length);
+	    }
+     })
+     .Method("check_data", function() {
+     	if(typeof this.data.task_id === "undefined") {
+	  		throw nscrum.MissingData("Field task_id is undefined");
+	    }
+	    if(typeof this.data.project_id === "undefined") {
+	  		throw nscrum.MissingData("Field project_id is undefined");
+	    }
+	    if(typeof this.data.task_title === "undefined") {
+	  		throw nscrum.MissingData("Field task_title is undefined");
+	    }
+	    if(typeof this.data.task_description === "undefined") {
+	  		throw nscrum.MissingData("Field task_description is undefined");
+	    }
+	    
      })
      
      .Method("task_id", function () {
-        return this.data.task_id;
+        return new nscrum.TaskId(this.data.task_id); /*rewrap uuid*/
      })
      .Method("project_id", function () {
-        return this.data.project_id;
+        return new nscrum.ProjectId(this.data.project_id); /*rewrap uuid*/
      })
      .Method("task_title", function () {
-        return this.data.task_title;
+        return this.data.task_title; 
      })
      .Method("task_description", function () {
-        return this.data.task_description;
+        return this.data.task_description; 
      })
      ;
 
@@ -973,17 +1429,35 @@ Sslac.Function("nscrum.TaskHandler.nscrum_TaskCreatedEvent", function(event) {
 Sslac.Class("nscrum.TaskAffectedToSprintEvent")
      .Extends("nscrum.Event")
      .Constructor(function (task_id,sprint_id) {
-        this.Parent("nscrum.TaskAffectedToSprintEvent", {
-            task_id : task_id,
-            sprint_id : sprint_id
-        });
+     	if(arguments.length == 0) {
+     		// deserialization case, data is directly injected
+     		this.Parent("nscrum.TaskAffectedToSprintEvent");
+     	}
+     	else if(arguments.length == 2) {
+	        this.Parent("nscrum.TaskAffectedToSprintEvent", {
+	            task_id :  task_id.uuid() /*unwrap uuid for serialization*/ ,
+	            sprint_id :  sprint_id.uuid() /*unwrap uuid for serialization*/ 
+	        });
+	    }
+	    else {
+	    	throw nscrum.InvalidNumberOfArguments("Expected: " + 2 + " got: " + arguments.length);
+	    }
+     })
+     .Method("check_data", function() {
+     	if(typeof this.data.task_id === "undefined") {
+	  		throw nscrum.MissingData("Field task_id is undefined");
+	    }
+	    if(typeof this.data.sprint_id === "undefined") {
+	  		throw nscrum.MissingData("Field sprint_id is undefined");
+	    }
+	    
      })
      
      .Method("task_id", function () {
-        return this.data.task_id;
+        return new nscrum.TaskId(this.data.task_id); /*rewrap uuid*/
      })
      .Method("sprint_id", function () {
-        return this.data.sprint_id;
+        return new nscrum.SprintId(this.data.sprint_id); /*rewrap uuid*/
      })
      ;
 
@@ -1002,17 +1476,35 @@ Sslac.Function("nscrum.TaskHandler.nscrum_TaskAffectedToSprintEvent", function(e
 Sslac.Class("nscrum.TaskAttachedToStoryEvent")
      .Extends("nscrum.Event")
      .Constructor(function (task_id,story_id) {
-        this.Parent("nscrum.TaskAttachedToStoryEvent", {
-            task_id : task_id,
-            story_id : story_id
-        });
+     	if(arguments.length == 0) {
+     		// deserialization case, data is directly injected
+     		this.Parent("nscrum.TaskAttachedToStoryEvent");
+     	}
+     	else if(arguments.length == 2) {
+	        this.Parent("nscrum.TaskAttachedToStoryEvent", {
+	            task_id :  task_id.uuid() /*unwrap uuid for serialization*/ ,
+	            story_id :  story_id.uuid() /*unwrap uuid for serialization*/ 
+	        });
+	    }
+	    else {
+	    	throw nscrum.InvalidNumberOfArguments("Expected: " + 2 + " got: " + arguments.length);
+	    }
+     })
+     .Method("check_data", function() {
+     	if(typeof this.data.task_id === "undefined") {
+	  		throw nscrum.MissingData("Field task_id is undefined");
+	    }
+	    if(typeof this.data.story_id === "undefined") {
+	  		throw nscrum.MissingData("Field story_id is undefined");
+	    }
+	    
      })
      
      .Method("task_id", function () {
-        return this.data.task_id;
+        return new nscrum.TaskId(this.data.task_id); /*rewrap uuid*/
      })
      .Method("story_id", function () {
-        return this.data.story_id;
+        return new nscrum.StoryId(this.data.story_id); /*rewrap uuid*/
      })
      ;
 
@@ -1031,17 +1523,35 @@ Sslac.Function("nscrum.TaskHandler.nscrum_TaskAttachedToStoryEvent", function(ev
 Sslac.Class("nscrum.TaskStateChangedEvent")
      .Extends("nscrum.Event")
      .Constructor(function (task_id,new_state) {
-        this.Parent("nscrum.TaskStateChangedEvent", {
-            task_id : task_id,
-            new_state : new_state
-        });
+     	if(arguments.length == 0) {
+     		// deserialization case, data is directly injected
+     		this.Parent("nscrum.TaskStateChangedEvent");
+     	}
+     	else if(arguments.length == 2) {
+	        this.Parent("nscrum.TaskStateChangedEvent", {
+	            task_id :  task_id.uuid() /*unwrap uuid for serialization*/ ,
+	            new_state :  new_state 
+	        });
+	    }
+	    else {
+	    	throw nscrum.InvalidNumberOfArguments("Expected: " + 2 + " got: " + arguments.length);
+	    }
+     })
+     .Method("check_data", function() {
+     	if(typeof this.data.task_id === "undefined") {
+	  		throw nscrum.MissingData("Field task_id is undefined");
+	    }
+	    if(typeof this.data.new_state === "undefined") {
+	  		throw nscrum.MissingData("Field new_state is undefined");
+	    }
+	    
      })
      
      .Method("task_id", function () {
-        return this.data.task_id;
+        return new nscrum.TaskId(this.data.task_id); /*rewrap uuid*/
      })
      .Method("new_state", function () {
-        return this.data.new_state;
+        return this.data.new_state; 
      })
      ;
 
@@ -1060,17 +1570,35 @@ Sslac.Function("nscrum.TaskHandler.nscrum_TaskStateChangedEvent", function(event
 Sslac.Class("nscrum.TaskTitleChangedEvent")
      .Extends("nscrum.Event")
      .Constructor(function (task_id,title) {
-        this.Parent("nscrum.TaskTitleChangedEvent", {
-            task_id : task_id,
-            title : title
-        });
+     	if(arguments.length == 0) {
+     		// deserialization case, data is directly injected
+     		this.Parent("nscrum.TaskTitleChangedEvent");
+     	}
+     	else if(arguments.length == 2) {
+	        this.Parent("nscrum.TaskTitleChangedEvent", {
+	            task_id :  task_id.uuid() /*unwrap uuid for serialization*/ ,
+	            title :  title 
+	        });
+	    }
+	    else {
+	    	throw nscrum.InvalidNumberOfArguments("Expected: " + 2 + " got: " + arguments.length);
+	    }
+     })
+     .Method("check_data", function() {
+     	if(typeof this.data.task_id === "undefined") {
+	  		throw nscrum.MissingData("Field task_id is undefined");
+	    }
+	    if(typeof this.data.title === "undefined") {
+	  		throw nscrum.MissingData("Field title is undefined");
+	    }
+	    
      })
      
      .Method("task_id", function () {
-        return this.data.task_id;
+        return new nscrum.TaskId(this.data.task_id); /*rewrap uuid*/
      })
      .Method("title", function () {
-        return this.data.title;
+        return this.data.title; 
      })
      ;
 
@@ -1090,17 +1618,35 @@ Sslac.Function("nscrum.TaskHandler.nscrum_TaskTitleChangedEvent", function(event
 Sslac.Class("nscrum.TaskDescriptionChangedEvent")
      .Extends("nscrum.Event")
      .Constructor(function (task_id,description) {
-        this.Parent("nscrum.TaskDescriptionChangedEvent", {
-            task_id : task_id,
-            description : description
-        });
+     	if(arguments.length == 0) {
+     		// deserialization case, data is directly injected
+     		this.Parent("nscrum.TaskDescriptionChangedEvent");
+     	}
+     	else if(arguments.length == 2) {
+	        this.Parent("nscrum.TaskDescriptionChangedEvent", {
+	            task_id :  task_id.uuid() /*unwrap uuid for serialization*/ ,
+	            description :  description 
+	        });
+	    }
+	    else {
+	    	throw nscrum.InvalidNumberOfArguments("Expected: " + 2 + " got: " + arguments.length);
+	    }
+     })
+     .Method("check_data", function() {
+     	if(typeof this.data.task_id === "undefined") {
+	  		throw nscrum.MissingData("Field task_id is undefined");
+	    }
+	    if(typeof this.data.description === "undefined") {
+	  		throw nscrum.MissingData("Field description is undefined");
+	    }
+	    
      })
      
      .Method("task_id", function () {
-        return this.data.task_id;
+        return new nscrum.TaskId(this.data.task_id); /*rewrap uuid*/
      })
      .Method("description", function () {
-        return this.data.description;
+        return this.data.description; 
      })
      ;
 
@@ -1124,6 +1670,20 @@ Sslac.Class("nscrum.Task")
      .Constructor(function Constructor() {
         this.Parent();
      })
+     .Static("load_from_history", function(event_stream) {
+        var task = new nscrum.Task ();
+        task.load_from_history (event_stream);
+        return task;
+     })
+     /**
+      * Entity ns
+      */
+     .Method("entity_ns", function() { 
+         return "nscrum.Task"; 
+     })
+     /**
+      * Event handler ns (used to find event specific handler through reflection)
+      */
      .Method("handler_ns", function() { 
          return "nscrum.TaskHandler"; 
      })
@@ -1183,11 +1743,7 @@ Sslac.Class("nscrum.Task")
     	task.apply_event(new nscrum.TaskCreatedEvent(task_id, project_id, task_title, task_description));
     	return task;
      })
-     .Static("load_from_history", function(event_stream) {
-        var task = new nscrum.Task ();
-        task.load_from_history (event_stream);
-        return task;
-     })
+     
      ;
 
 /**
@@ -1195,7 +1751,18 @@ Sslac.Class("nscrum.Task")
  */
 Sslac.Class("nscrum.TaskRepository")
      .Extends("nscrum.Repository")
-     .Constructor(function (event_store) {
-        this.Parent(event_store, "nscrum.Task");
+     .Constructor(function (event_store, notification_bus) {
+        this.Parent("nscrum.Task", "nscrum.TaskId", event_store, notification_bus);
+     })
+     .Method("asDefault", function() {
+        nscrum.Environment.nscrum_TaskRepository = this;
+        return this;
+     })
+     .Static("getDefault", function() {
+     	var instance = nscrum.Environment.nscrum_TaskRepository;
+     	if(!instance) {
+     		throw nscrum.NotBoundInEnvironment("nscrum.TaskRepository");
+     	}
+        return instance;
      })
      ;

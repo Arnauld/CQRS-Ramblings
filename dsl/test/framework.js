@@ -39,6 +39,25 @@ Sslac.Function("nscrum.IdAlreadyAssigned", function(message) {
    return new Error("IdAlreadyAssigned: " + message); 
 });
 
+Sslac.Function("nscrum.NotBoundInEnvironment", function(message) {
+   return new Error("NotBoundInEnvironment: " + message); 
+});
+
+Sslac.Function("nscrum.InvalidAggregateType", function(message) {
+   return new Error("InvalidAggregateType: " + message); 
+});
+
+Sslac.Function("nscrum.InvalidAggregateIdType", function(message) {
+   return new Error("InvalidAggregateIdType: " + message); 
+});
+
+Sslac.Function("nscrum.InvalidNumberOfArguments", function(message) {
+   return new Error("InvalidNumberOfArguments: " + message); 
+});
+
+Sslac.Function("nscrum.MissingData", function(message) {
+   return new Error("MissingData: " + message); 
+});
 
 Sslac.Class("nscrum.Stream")
      .Method("read", function(callback) {
@@ -107,7 +126,7 @@ Sslac.Class("nscrum.AggregateRoot")
         // make sure id is not already affected
         if(this.has_id()) {
             if(id.uuid() !== this.uuid()) {
-                throw nscrum.IdAlreadyAssigned("<%=name%> already in created state with id <" + this.uuid() + ">");
+                throw nscrum.IdAlreadyAssigned(this.entity_ns() + " already in created state with id <" + this.uuid() + ">");
             }
         }
         else {
@@ -127,10 +146,11 @@ Sslac.Class("nscrum.AggregateRoot")
         }
 
         if(!is_new_event) {
-            if(this.data._version !== event.data.aggregate_version) {
-                throw nscrum.InvalidEventSequence("Expected: " + this.data._version + " got: " + event.data.aggregate_version);
+            var event_version = event.aggregate_version();
+            if(this.data._version !== event_version) {
+                throw nscrum.InvalidEventSequence("Expected: " + this.data._version + " got: " + event_version);
             }
-            this.data._version = (event.data.aggregate_version + 1);
+            this.data._version = (event_version + 1);
         }
 
         var handler = this.find_handler(event);
@@ -192,19 +212,30 @@ Sslac.Class("nscrum.Event")
      .Constructor(function (event_type, data) {
         this.data = data || {};
         this.data.event_type = event_type;
+        this.aggregate = {};
      })
      .Method("event_type", function (event) {
         return this.data.event_type;
      })
      .Method("claimed_by", function (aggregate_id, aggregate_version) {
-        this.data.aggregate_id = aggregate_id;
-        this.data.aggregate_version = aggregate_version;
+        this.aggregate = {
+            id      : aggregate_id.uuid(),
+            version : aggregate_version
+        };
      })
-     .Static("from_data", function(data) {
+     .Method("aggregate_uuid", function () {
+        return this.aggregate.id;
+     })
+     .Method("aggregate_version", function () {
+        return this.aggregate.version;
+     })
+     .Static("from_data", function(aggregate, data) {
          var event_type = data.event_type;
          var klazz = Sslac.valueOf(event_type);
          var instance = new klazz();
          instance.data = data;
+         instance.aggregate = aggregate;
+         instance.check_data();
          return instance;
      })
      ;
@@ -219,18 +250,25 @@ Sslac.Class("nscrum.EventStream")
         var i;
         for(i=0;i<array.length;i++) {
             var event_data = array[i];
-            var event = nscrum.Event.from_data(event_data);
+            var event = nscrum.Event.from_data(event_data.aggregate, event_data.data);
             callback(event);
         }
      })
      .Method("write", function(event) {
-        this.array.push(event.data);
+        this.array.push({ aggregate: event.aggregate, data: event.data });
+     })
+     .Method("close", function() {
+         // no-op for in-memory impl
      })
      ;
 
 Sslac.Class("nscrum.EventStore")
      .Constructor(function () {
         this.data = {};
+     })
+     .Method("asDefault", function() {
+        nscrum.Environment.event_store = this;
+        return this;
      })
      .Method("open_stream", function (stream_id) {
         var uuid = stream_id.uuid();
@@ -241,22 +279,81 @@ Sslac.Class("nscrum.EventStore")
         var data = this.data[uuid];
         return new nscrum.EventStream(data);
      })
+     .Method("traverse", function(callback) {
+         var aggregate;
+         for(aggregate in this.data) {
+             if(this.data.hasOwnProperty(aggregate)) {
+                callback(aggregate, this.data[aggregate]);
+            }
+         }
+     })
+     ;
+
+Sslac.Static("nscrum.Environment");
+
+Sslac.Class("nscrum.Bus")
+     .Constructor(function() {
+        var events = require('events');
+        this.eventEmitter = new events.EventEmitter();
+     })
+     .Method("asNotificationBus", function() {
+        nscrum.Environment.notification_bus = this;
+        return this;
+     })
+     .Method("dispose", function() {
+        this.remove_all_listeners();
+        if(nscrum.Environment.notification_bus === this) {
+            delete nscrum.Environment.notification_bus;
+        }
+        return this;
+     })
+     .Method("publish", function(event_key, data) {
+        this.eventEmitter.emit(event_key, data);
+     })
+     .Method("add_listener", function(event_key, listener) {
+         this.eventEmitter.addListener(event_key, listener);
+     })
+     .Method("remove_listener", function(event_key, listener) {
+         this.eventEmitter.removeListener(event_key, listener);
+     })
+     .Method("remove_all_listeners", function(event) {
+         this.eventEmitter.removeAllListeners(event);
+     })
      ;
 
 Sslac.Class("nscrum.Repository")
-     .Constructor(function (event_store, entity_ns) {
-        this.event_store = event_store;
-        this.entity_ns   = entity_ns;
+     .Constructor(function (entity_ns, entity_id_ns, event_store, notification_bus) {
+        this.entity_ns    = entity_ns;
+        this.entity_id_ns = entity_id_ns;
+        this.event_store  = event_store || nscrum.Environment.event_store;
+        this.notification_bus = notification_bus || nscrum.Environment.notification_bus;
+     })
+     .Method("broadcast_event", function(event) {
+        if(this.notification_bus) {
+            // by default simply publish the event as is
+            this.notification_bus.publish(this.entity_ns, event);
+        }
      })
      .Method("get", function(aggregate_id) {
+        if((aggregate_id instanceof Sslac.valueOf(this.entity_id_ns)) === false) {
+            throw nscrum.InvalidAggregateIdType("Expected: " + this.entity_id_ns);
+        }
+
         var stream = this.event_store.open_stream(aggregate_id);
         return Sslac.valueOf(this.entity_ns).load_from_history(stream);
      })
      .Method("add", function(aggregate) {
+        if((aggregate instanceof Sslac.valueOf(this.entity_ns)) === false) {
+            throw nscrum.InvalidAggregateType("Expected: " + this.entity_ns);
+        }
+
+        var self = this;
         var stream = this.event_store.open_stream(aggregate.data._id);
         aggregate.drain_uncommitted_events(function(event) {
-           stream.write(event); 
+           stream.write(event);
+           self.broadcast_event(event);
         });
+        stream.close();
      })
      ;
 

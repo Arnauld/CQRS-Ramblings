@@ -28,14 +28,36 @@ event_views.forEach(function(event_view) {
 %>Sslac.Class("<%=namespace%>.<%=event_view.name%>")
      .Extends("nscrum.Event")
      .Constructor(function (<%=event_view.field_names().join(",")%>) {
-        this.Parent("<%=namespace%>.<%=event_view.name%>", {
-        <% event_view.fields.forEach(function (field) { 
-          %>    <%=field.name%> : <%=field.name%><% if(!field.last_field) {%>,<%}%>
-        <% }); %>});
+     	if(arguments.length == 0) {
+     		// deserialization case, data is directly injected
+     		this.Parent("<%=namespace%>.<%=event_view.name%>");
+     	}
+     	else if(arguments.length == <%=event_view.fields.length%>) {
+	        this.Parent("<%=namespace%>.<%=event_view.name%>", {
+	        <% event_view.fields.forEach(function (field) { 
+	          %>    <%=field.name%> : <% 
+	          			if(field.is_identifier()) { 
+	          		%> <%=field.name%>.uuid() /*unwrap uuid for serialization*/ <% 
+	          			} else {
+	          		%> <%=field.name%> <% 
+	          			} %><% if(!field.last_field) {%>,<%}%>
+	        <% }); %>});
+	    }
+	    else {
+	    	throw nscrum.InvalidNumberOfArguments("Expected: " + <%=event_view.fields.length%> + " got: " + arguments.length);
+	    }
+     })
+     .Method("check_data", function() {
+     	<% event_view.fields.forEach(function (field) { 
+	  %>if(typeof this.data.<%=field.name%> === "undefined") {
+	  		throw nscrum.MissingData("Field <%=field.name%> is undefined");
+	    }
+	    <% }); %>
      })
      <% event_view.fields.forEach(function (field) { %>
      .Method("<%=field.name%>", function () {
-        return this.data.<%=field.name%>;
+        return<% if(field.is_identifier()) { %> new <%=namespace%>.<%=field.datatype%>(this.data.<%=field.name%>); /*rewrap uuid*/<% } 
+                 else                      { %> this.data.<%=field.name%>; <% } %>
      })<% }); %>
      ;
 
@@ -64,6 +86,20 @@ Sslac.Class("<%=namespace%>.<%=name%>")
      .Constructor(function Constructor() {
         this.Parent();
      })
+     .Static("load_from_history", function(event_stream) {
+        var <%=variable_name%> = new <%=namespace%>.<%=name%> ();
+        <%=variable_name%>.load_from_history (event_stream);
+        return <%=variable_name%>;
+     })
+     /**
+      * Entity ns
+      */
+     .Method("entity_ns", function() { 
+         return "<%=namespace%>.<%=name%>"; 
+     })
+     /**
+      * Event handler ns (used to find event specific handler through reflection)
+      */
      .Method("handler_ns", function() { 
          return "<%=namespace%>.<%=name%>Handler"; 
      })<%
@@ -92,12 +128,7 @@ Sslac.Class("<%=namespace%>.<%=name%>")
     	<%=variable_name%>.apply_event(new <%=namespace%>.<%=factory_view.event_view.name%>(<%=factory_view.event_view.field_names().join(", ")%>));
     	return <%=variable_name%>;
      })
-     <% }); 
-   %>.Static("load_from_history", function(event_stream) {
-        var <%=variable_name%> = new <%=namespace%>.<%=name%> ();
-        <%=variable_name%>.load_from_history (event_stream);
-        return <%=variable_name%>;
-     })
+     <% }); %>
      ;
 
 /**
@@ -105,7 +136,18 @@ Sslac.Class("<%=namespace%>.<%=name%>")
  */
 Sslac.Class("<%=namespace%>.<%=name%>Repository")
      .Extends("nscrum.Repository")
-     .Constructor(function (event_store) {
-        this.Parent(event_store, "<%=namespace%>.<%=name%>");
+     .Constructor(function (event_store, notification_bus) {
+        this.Parent("<%=namespace%>.<%=name%>", "<%=namespace%>.<%=model_id_datatype%>", event_store, notification_bus);
+     })
+     .Method("asDefault", function() {
+        nscrum.Environment.<%=namespace%>_<%=name%>Repository = this;
+        return this;
+     })
+     .Static("getDefault", function() {
+     	var instance = nscrum.Environment.<%=namespace%>_<%=name%>Repository;
+     	if(!instance) {
+     		throw nscrum.NotBoundInEnvironment("<%=namespace%>.<%=name%>Repository");
+     	}
+        return instance;
      })
      ;

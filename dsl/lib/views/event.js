@@ -40,13 +40,15 @@ var generate_event_fields = exports.generate_event_fields = function(model, feat
         }
         return {
             name     : field_name,
-            datatype : argument.datatype
+            datatype : argument.datatype,
+            is_identifier: function() { return this.name.endsWith("_id"); }
         };
     });
     if(!id_exists) {
         fields.unshift({
             name     : model_id,
-            datatype : Utils.model_id_datatype(model)
+            datatype : Utils.model_id_datatype(model),
+            is_identifier: function() { return this.name.endsWith("_id"); }
         });
     }
     return fields;

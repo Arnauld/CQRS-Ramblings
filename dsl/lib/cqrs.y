@@ -19,6 +19,7 @@ frac                        (?:\.[0-9]+)
 "}"                                                           return '}'
 "["                                                           return '['
 "]"                                                           return ']'
+"--"                                                          return 'OPTION'
 "aggregateRoot"                                               return 'AGGREGATE'
 "event"                                                       return 'EVENT'
 "def"                                                         return 'DEF'
@@ -47,7 +48,20 @@ elementDefList
 
 elementDef
 	: aggregateDef
+	| optionDef
 /*	| valueObjectDef*/
+	;
+
+optionDef
+	: OPTION identifier optional_value
+		{$$ = yy.option($2, $3);}
+	;
+
+optional_value
+	: string
+		{$$=$1}
+	|   
+		{$$=null}
 	;
 
 aggregateDef

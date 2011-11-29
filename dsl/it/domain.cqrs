@@ -11,9 +11,9 @@ aggregateRoot User extends HasComment {
 
 aggregateRoot Project extends HasComment {
 	name:String
-	owner:UserId
+	owner_id:UserId
 
-	factory create(project_id:ProjectId, project_name:String, owner:UserId)
+	factory create(project_id:ProjectId, project_name:String, owner_id:UserId)
 
 	def change_name(new_name:String)
     def add_member(user_id:UserId, role:TeamMemberRole)
