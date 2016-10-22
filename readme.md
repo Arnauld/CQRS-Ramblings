@@ -1,6 +1,6 @@
 # Articles
 
-see [](doc/article/cqrs-article.mdown)
+see [cqrs notes](doc/article/cqrs-article.mdown)
 
 # Notes
 
