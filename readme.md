@@ -1,3 +1,7 @@
+# Articles
+
+see [](doc/article/cqrs-article.mdown)
+
 # Notes
 
 To get a preview before pushing it in github:
